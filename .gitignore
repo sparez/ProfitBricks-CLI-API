@@ -3,6 +3,11 @@
 
 *.auth
 
+# Custom scripts #
+##################
+
+src/save
+
 # Logs #
 ########
 
