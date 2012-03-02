@@ -41,7 +41,7 @@ may be used to create, update and delete ProfitBricks Virtual Data Centers and t
 .Pp
 .Nm Fl authfile Ar "/home/user/pbauth" Fl srvid Ar "abc" Ar delete-server
 .Pp
-.Nm Fl u Ar santaclaus Fl p Ar jinglebells Ar create-server Fl dcid Ar "012abcdef" Fl cpu Ar 4 Fl ram Ar 4096 Fl server-name Ar testsrv Fl internet-access Ar y
+.Nm Fl u Ar santaclaus Fl p Ar jinglebells Ar create-server Fl dcid Ar "012abcdef" Fl cores Ar 4 Fl ram Ar 4096 Fl server-name Ar testsrv Fl internet-access Ar y
 .\" BASE ARGUMENTS
 .Sh BASE ARGUMENTS
 All the operations and their respective parameters are Case Insensitive and dash-insensitive, so these are the same: createServer, CREATESERVER, create-server, Create-SERVER; and these are the same: -ramUnits, -RAMUnits, -ram-units, -r-a-m-U-n-i-t-s.
@@ -80,8 +80,8 @@ argument.
 .Bl -tag -width Ds
 .It Fl dcid Ar dataCenterId
 The ID of the Data Center.
-.It Fl cpu Ar cpuUnits
-Number of virtual CPUs to be assigned to the server.
+.It Fl cores Ar nrCores
+Number of virtual CPU cores to be assigned to the server.
 .It Fl ram Ar ramUnits
 Number of Megabytes (MiB) to be assigned to the server. Minimum value is 256 (256 MiB).
 .It Op Fl name Ar serverName
@@ -112,8 +112,8 @@ Timestamp when the server has been modified.
 Current provisioning state (INACTIVE, INPROCESS, AVAILABLE, DELETED).
 .It virtual machine state
 Current state of the Virtual Machine (NOSTATE (provisioning in progress or boot failed), RUNNING, BLOCKED, PAUSED, SHUTDOWN, SHUTOFF, CRASHED).
-.It cpu
-Number of virtual CPUs assigned to the server.
+.It cores
+Number of virtual CPU cores assigned to the server.
 .It ram
 Amount of RAM in Megabytes (MiB) assigned to the server.
 .It internet access
@@ -141,8 +141,8 @@ Updates parameters of an existing Virtual Server.
 .Bl -tag -width Ds
 .It Op Fl name Ar serverName
 Rename the Virtual Server.
-.It Op Fl cpu Ar cpuUnits
-Update number of virtual CPUs to be assigned to the server.
+.It Op Fl cores Ar nrCores
+Update number of virtual CPU cores to be assigned to the server.
 .It Op Fl ram Ar ramUnits
 Update number of Megabytes (MiB) to be assigned to the server. Minimum value is 256 (256 MiB).
 .It Op Fl bootFromImageId Ar bootFromImageId
@@ -169,7 +169,7 @@ In the case of
 .Ar createDataCenter
 there is no need for
 .Fl dcid .
-Outputs the id of the newly created data center.
+Outputs the ID of the newly created data center.
 .Bl -tag -width Ds
 .It Op Fl name Ar name
 The name of the newly created Data Center. Cannot contain \@, \\, /, |, ", or \'.
@@ -205,11 +205,83 @@ Update the data center. The only argument that can be specified for now is the n
 .Bl -tag -width Ds
 .It Op Fl name Ar name
 The new name of the Data Center.
+.El
 .It Ar clearDataCenter
 Removes all components from an existing data center.
 .It Ar deleteDataCenter
 Deletes an empty Virtual Data Center. All components must be removed first.
 .El
+.\" VIRTUAL STORAGES OPERATIONS AND ARGUMENTS
+.Sh VIRTUAL STORAGES OPERATIONS AND ARGUMENTS
+.Nm
+.Fl u Ar username Fl p Ar password Ar operation Fl stoid Ar storageId Op ...
+.Pp
+The
+.Ar operation
+may be:
+.Bl -tag -width Ds
+.It Ar createStorage
+In the case of
+.Ar createStorage
+there is no need for
+.Fl stoid .
+Outputs the ID of the newly created virtual storage.
+.Bl -tag -width Ds
+.It Fl dcid Ar dataCenterId
+The ID of the data center in which to create the virtual storage 
+.It Fl size Ar GiB
+Size of the virtual storage in gigabytes.
+.It Op Fl name Ar name
+Name for the virtual storage.
+.It Op Fl mountImageId Ar imageId
+The ID of a virtual image to be mounted on the newly created virtual storage.
+.El
+.It Ar getStorage
+Return information about the virtual storage:
+.Bl -tag -width Ds
+.It storage name
+The name of the virtual storage.
+.It creation time
+Time when the virtual storage has been created.
+.It last modification time
+Time when the virtual storage was last modified.
+.It provisioning state
+Current provisioning state of the virtual storage (INACTIVE, INPROCESS, AVAILABLE, DELETED).
+.It size
+Size of the virtual storage, in gigabytes.
+.It mount image
+Information about the image assigned to the virtual storage.
+.It os type
+Operating system type of virtual storage (OTHER, WINDOWS, UNKNOWN).
+.El
+.It Ar connectStorageToServer
+Connects the virtual storage to an existing server.
+.Bl -tag -width Ds
+.It Fl srvid Ar serverId
+The ID of the target virtual server.
+.It Fl busType Ar busType
+Bus type to which the storage will be connected (IDE, SCSI or VIRTIO)
+.It Op Fl devnum Ar deviceNumber
+Defines the device number of the virtual storage. If no device number is set, a device number will be automatically assigned.
+.El
+.It Ar disconnectStorageFromServer
+Disconnects the virtual storage from a connected server.
+.Bl -tag -width Ds
+.It Fl srvid Ar serverId
+The ID of the connected virtual server.
+.El
+.It Ar updateStorage
+Updates parameters of an existing virtual storage device.
+.Bl -tag -width Ds
+.It Op Fl name Ar name
+Renames the virtual storage.
+.It Op Fl size Ar GiB
+Updates the size of the virtual storage (in gigabytes).
+.It Op Fl mountImageId Ar imageId
+Assigns or reassigns an image to the storage.
+.El
+.It Ar deleteStorage
+Deletes an existing virtual storage device.
 .El
 .\" EXIT STATUS
 .Sh EXIT STATUS
