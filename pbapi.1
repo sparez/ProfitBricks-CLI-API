@@ -1,0 +1,225 @@
+.\"
+.\" Copyright 2012 ProfitBricks GmbH
+.\"
+.\" Licensed under the Apache License, Version 2.0 (the "License");
+.\" you may not use this file except in compliance with the License.
+.\" You may obtain a copy of the License at
+.\"
+.\"     http://www.apache.org/licenses/LICENSE-2.0
+.\"
+.\" Unless required by applicable law or agreed to in writing, software
+.\" distributed under the License is distributed on an "AS IS" BASIS,
+.\" WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.\" See the License for the specific language governing permissions and
+.\" limitations under the License.
+.\"
+.Dd Jan 30, 2012
+.Dt PBAPI 1
+.Os \" Current operating system
+.\" NAME
+.Ss NAME
+.Nm pbapi \- ProfitBricks API tools
+.Nd Manipulates the ProfitBricks data centers and components.
+.\" SYNOPSYS
+.Sh SYNOPSYS
+.Nm
+.Op Fl u Ar username
+.Op Fl p Ar password | Fl p Ar -
+.Op Fl auth Ar authfile
+.Op Fl s
+.Ar operation
+.Op Fl dcid Ar id | Fl srvid Ar id
+.Op ...
+.\" DESCRIPTION
+.Sh DESCRIPTION
+The
+.Nm
+may be used to create, update and delete ProfitBricks Virtual Data Centers and their components (servers, storage devices, etc).
+.\" EXAMPLES
+.Sh EXAMPLES
+.Nm Fl authfile Ar "/home/user/pbauth" Fl dcid Ar "012abcdef" Ar get-datacenter-state
+.Pp
+.Nm Fl authfile Ar "/home/user/pbauth" Fl srvid Ar "abc" Ar delete-server
+.Pp
+.Nm Fl u Ar santaclaus Fl p Ar jinglebells Ar create-server Fl dcid Ar "012abcdef" Fl cpu Ar 4 Fl ram Ar 4096 Fl server-name Ar testsrv Fl internet-access Ar y
+.\" BASE ARGUMENTS
+.Sh BASE ARGUMENTS
+All the operations and their respective parameters are Case Insensitive and dash-insensitive, so these are the same: createServer, CREATESERVER, create-server, Create-SERVER; and these are the same: -ramUnits, -RAMUnits, -ram-units, -r-a-m-U-n-i-t-s.
+.Pp
+All the operations require authentication, therefore the base arguments for all operations are
+.Fl u Ar username Fl p Ar password
+or instead of that you can use
+.Fl auth Ar authfile .
+.Bl -tag -width Ds
+.It Fl u Ar username
+The ProfitBricks username.
+.It Fl p Ar password
+The ProfitBricks password. If the password is not provided, it will be read from stdin. Providing
+.Ar -
+as password will prompt the user for the password from the stdin.
+.It Fl auth Ar authfile
+The
+.Ar authfile
+must contain the authentication username on the first line and password on the second line. For security reasons, the file must only be readable by your user.
+.It Fl s
+Enable short output formatting (display less information).
+.El
+.\" VIRTUAL SERVER OPERATIONS AND ARGUMENTS
+.Sh VIRTUAL SERVER OPERATIONS AND ARGUMENTS
+.Nm
+.Fl u Ar username Fl p Ar password Ar operation Fl srvid Ar serverId Op ...
+.Pp
+The
+.Ar operation
+may be:
+.Bl -tag -width Ds
+.It Ar createServer
+Creates a Virtual Server within an existing Data Center. Parameters can be specified to set up a boot device and connect the server to an existing LAN or the Internet. This operation doesn't require the
+.Fl srvid
+argument.
+.Bl -tag -width Ds
+.It Fl dcid Ar dataCenterId
+The ID of the Data Center.
+.It Fl cpu Ar cpuUnits
+Number of virtual CPUs to be assigned to the server.
+.It Fl ram Ar ramUnits
+Number of Megabytes (MiB) to be assigned to the server. Minimum value is 256 (256 MiB).
+.It Op Fl name Ar serverName
+Names the server to be created.
+.It Op Fl bootFromImageId Ar bootFromImageId
+Defines an existing CD/DVD image ID to be set as boot device for the server. It will be connected to the server implicitly.
+.It Op Fl bootFromStorageId Ar bootFromStorageId
+Defines an existing storage device ID to be set as boot device of the server. The storage will be connected to the server implicitly.
+.It Op Fl lanId Ar lanId
+Connects the server to the specified LAN ID. If the respective LAN does not exist, it is going to be created.
+.It Op Fl internetAccess Ar y | n
+If set to "y", the specified
+.Ar lanId
+will be connected to the Internet.
+.It Op Fl osType Ar osType
+Sets the OS type of the server (WINDOWS, OTHER). If left empty, the server will inherit the OS Type of its selected boot image / storage.
+.El
+.It Ar getServer
+Returns the following information about the server:
+.Bl -tag -width Ds
+.It server name
+The name of the Virtual Server.
+.It creation time
+Timestamp when the server was created.
+.It last modification time
+Timestamp when the server has been modified.
+.It provisioning state
+Current provisioning state (INACTIVE, INPROCESS, AVAILABLE, DELETED).
+.It virtual machine state
+Current state of the Virtual Machine (NOSTATE (provisioning in progress or boot failed), RUNNING, BLOCKED, PAUSED, SHUTDOWN, SHUTOFF, CRASHED).
+.It cpu
+Number of virtual CPUs assigned to the server.
+.It ram
+Amount of RAM in Megabytes (MiB) assigned to the server.
+.It internet access
+yes | no, tells if the
+.Ar lanid
+has access to the Internet.
+.It ips
+Lists all IP addresses assigned to the server. Empty if provisioning in progress.
+.It nics
+Lists all NICs assigned to the server. Empty if provisioning in progress.
+.It connected storages
+Lists all storages assigned to the server.
+.It rom drives
+Lists CD/DCD drives assigned to the server, including
+.Ar imageId
+and
+.Ar imageName .
+.It os type
+Operating system type (WINDOWS, OTHER, UNKNOWN).
+.El
+.It Ar rebootServer
+Reboots an existing Virtual Server (POWER CYCLE).
+.It Ar updateServer
+Updates parameters of an existing Virtual Server.
+.Bl -tag -width Ds
+.It Op Fl name Ar serverName
+Rename the Virtual Server.
+.It Op Fl cpu Ar cpuUnits
+Update number of virtual CPUs to be assigned to the server.
+.It Op Fl ram Ar ramUnits
+Update number of Megabytes (MiB) to be assigned to the server. Minimum value is 256 (256 MiB).
+.It Op Fl bootFromImageId Ar bootFromImageId
+Defines an existing CD/DVD image ID to be set as boot device for the server. It will be connected to the server implicitly.
+.It Op Fl bootFromStorageId Ar bootFromStorageId
+Defines an existing storage device ID to be set as boot device of the server. The storage will be connected to the server implicitly.
+.It Op Fl osType Ar osType
+Updates the OS type of the server (WINDOWS, OTHER). If left empty, the server will inherit the OS Type of its selected boot image / storage.
+.El
+.It Ar deleteServer
+Deletes an existing virtual server.
+.El
+.\" DATACENTER OPERATIONS AND ARGUMENTS
+.Sh DATACENTER OPERATIONS AND ARGUMENTS
+.Nm
+.Fl u Ar username Fl p Ar password Ar operation Fl dcid Ar dataCenterId Op ...
+.Pp
+The
+.Ar operation
+may be:
+.Bl -tag -width Ds
+.It Ar createDataCenter
+In the case of
+.Ar createDataCenter
+there is no need for
+.Fl dcid .
+Outputs the id of the newly created data center.
+.Bl -tag -width Ds
+.It Op Fl name Ar name
+The name of the newly created Data Center. Cannot contain \@, \\, /, |, ", or \'.
+.El
+.It Ar getDataCenter
+Returns information about the Data Center:
+.Bl -tag -width Ds
+.It data center name
+Name of the Virtual Data Center.
+.It state
+The current provisioning state (INACTIVE, INPROCESS, AVAILABLE, DELETED).
+.It servers
+A list of Virtual Servers contained by the Virtual Data Center.
+.It storages
+A list of Virtual Storages contained by the Virtual Data Center.
+.It version
+Version of the Virtual Data Center.
+.El
+.It Ar getDataCenterState
+Returns the data center provisioning state (INACTIVE, INPROCESS, AVAILABLE, DELETED).
+.It Ar getAllDataCenters
+Returns a list of all data centers created by the current user.
+.Bl -tag -width Ds
+.It id
+The unique identifier of the Virtual Data Center.
+.It name
+The name provided when the Virtual Data Center was created (or updated).
+.It version
+Version of the Virtual Data Center.
+.El
+.It Ar updateDataCenter
+Update the data center. The only argument that can be specified for now is the new name of the data center.
+.Bl -tag -width Ds
+.It Op Fl name Ar name
+The new name of the Data Center.
+.It Ar clearDataCenter
+Removes all components from an existing data center.
+.It Ar deleteDataCenter
+Deletes an empty Virtual Data Center. All components must be removed first.
+.El
+.El
+.\" EXIT STATUS
+.Sh EXIT STATUS
+.Ex -std
+.\" DIAGNOSTICS
+.Sh DIAGNOSTICS
+(should give an overview of the most common error messages from your program and how to cope with them. There is no need to explain system error error messages (from perror(3)) or fatal signals (from psignal(3)) as they can appear during execution of any program.)
+.\" TO DO
+.Sh TO DO
+Everything.
+.\" AUTHOR
+.Sh AUTHOR
+Report bugs to <bugs at profitbricks dot com>
