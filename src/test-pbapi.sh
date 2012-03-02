@@ -4,7 +4,7 @@ debug=""
 ( echo "$@" | grep -e "-debug" >/dev/null ) && debug="-debug"
 
 function api() {
-	./pbapi.py "$debug" -auth costi.auth "$@" 2>&1
+	./pbapi.py "$debug" -auth default.auth "$@" 2>&1
 }
 
 function assert_text() {

@@ -1,7 +1,11 @@
 #!/bin/bash
 
-default_args="-auth costi.auth"
-#read -e -p "Default arguments (usually -u user -p pass): " default_args
+if [ -e default.auth ]; then
+	default_args="-auth default.auth"
+else
+	#default_args="-auth ../../costi.auth"
+	read -e -p "Default arguments (usually -u user -p pass): " default_args
+fi
 
 echo "Type 'exit' to leave"
 while [ true ]; do
