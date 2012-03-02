@@ -1,13 +1,16 @@
 #!/bin/bash
 
+echo ""
+
 if [ -e default.auth ]; then
 	default_args="-auth default.auth"
+	echo "Using -auth default.auth as default arguments"
 else
-	#default_args="-auth ../../costi.auth"
 	read -e -p "Default arguments (usually -u user -p pass): " default_args
 fi
 
-echo "Type 'exit' to leave"
+echo "Type 'exit' to leave or 'help' for help."
+echo ""
 while [ true ]; do
 	read -e -p "ProfitBricks> " command
 	

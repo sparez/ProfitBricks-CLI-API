@@ -195,7 +195,7 @@ class ProfitBricks:
 				ProfitBricks.APIError(err, {"RESOURCE_DELETED": "The Virtual Storage has been deleted by the user", "RESOURCE_NOT_FOUND": "Specified Virtual Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Storage"})
 		
 		def connectStorageToServer(self, stoId, srvId, busType, deviceNumber = None):
-			args = { "storageId": stoId, "serverId": srvId, "busType": busType }
+			args = { "storageId": stoId, "serverId": srvId, "busType": busType.upper() }
 			if deviceNumber != None:
 				args["deviceNumber"] = deviceNumber
 			try:
@@ -440,11 +440,11 @@ while i < len(sys.argv):
 			baseArgs["auth"] = sys.argv[i + 1]
 			try:
 				authFile = open(sys.argv[i + 1], "r")
+				baseArgs["u"] = authFile.readline().strip("\n")
+				baseArgs["p"] = authFile.readline().strip("\n")
+				authFile.close()
 			except:
 				ProfitBricks.ArgsError("Authfile does not exist or cannot be read")
-			baseArgs["u"] = authFile.readline().strip("\n")
-			baseArgs["p"] = authFile.readline().strip("\n")
-			authFile.close()
 			i += 1
 		elif arg.lower() == "-s":
 			baseArgs["s"] = True
@@ -456,6 +456,17 @@ while i < len(sys.argv):
 	else:
 		baseArgs["op"] = sys.argv[i];
 	i += 1
+
+## Load auth from default.auth if exists
+
+if "u" not in baseArgs or "p" not in baseArgs:
+	try:
+		authFile = open("default.auth", "r")
+		baseArgs["u"] = authFile.readline().strip("\n")
+		baseArgs["p"] = authFile.readline().strip("\n")
+		authFile.close()
+	except:
+		pass
 
 ## Verify that all required arguments are present
 
@@ -527,7 +538,7 @@ operations = {
 	},
 	"connectStorageToServer": {
 		"args": ["stoid", "srvid", "bus"],
-		"lambda": lambda: formatter.printConnectStorageToServer(api.connectStorageToServer(opArgs["stoid"], opArgs["srvid"], opArgs["bus"], opArgs["deviceNumber"] if "deviceNumber" in opArgs else None))
+		"lambda": lambda: formatter.printConnectStorageToServer(api.connectStorageToServer(opArgs["stoid"], opArgs["srvid"], opArgs["bus"], opArgs["devnum"] if "devnum" in opArgs else None))
 	},
 	"disconnectStorageFromServer": {
 		"args": ["stoid", "srvid"],
