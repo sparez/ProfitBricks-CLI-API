@@ -1,0 +1,10 @@
+# ProfitBricks API authentication files #
+#########################################
+
+*.auth
+
+# Logs #
+########
+
+*.log
+
