@@ -78,83 +78,55 @@ class ProfitBricks:
 			except suds.transport.TransportError as (err):
 				ProfitBricks.APIError(err, {"UNAUTHORIZED": "Invalid username or password"});
 		
-		def getAllDataCenters(self):
+		def call(self, func, args, customErrorMessages):
 			try:
-				return self.client.service.getAllDataCenters()
+				method = getattr(self.client.service, func)
+				return method(*args)
 			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err)
+				ProfitBricks.APIError(err, customErrorMessages)
+		
+		def getAllDataCenters(self):
+			return self.call('getAllDataCenters', [], {})
 		
 		def getDataCenter(self, id):
-			try:
-				return self.client.service.getDataCenter(id)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "Data Center does not exist"})
+			return self.call('getDataCenter', [id], {"RESOURCE_NOT_FOUND": "Data Center does not exist"})
 		
 		def getServer(self, id):
-			try:
-				return self.client.service.getServer(id)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "Data Center does not exist"})
+			return self.call("getServer", [id], {"RESOURCE_NOT_FOUND": "Data Center does not exist"})
 		
 		def createDataCenter(self, name):
-			try:
-				return self.client.service.createDataCenter(name)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"BAD_REQUEST": "Invalid characters in DataCenter name"})
+			return self.call("createDataCenter", [name], {"BAD_REQUEST": "Invalid characters in DataCenter name"})
 		
 		def getDataCenterState(self, id):
-			try:
-				return self.client.service.getDataCenterState(id)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "DataCenter does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter"})
+			return self.call("getDataCenterState", [id], {"RESOURCE_NOT_FOUND": "DataCenter does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter"})
 		
 		def updateDataCenter(self, apiArgs):
 			args = { "dataCenterId": apiArgs["dcid"] }
 			if "name" in apiArgs:
 				args["dataCenterName"] = apiArgs["name"]
-			try:
-				return self.client.service.updateDataCenter(args)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"BAD_REQUEST": "Invalid characters in DataCenter name", "RESOURCE_NOT_FOUND": "Specified DataCenter ID does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter"})
+			return self.call("updateDataCenter", [args], {"BAD_REQUEST": "Invalid characters in DataCenter name", "RESOURCE_NOT_FOUND": "Specified DataCenter ID does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter"})
 		
 		def clearDataCenter(self, id):
-			try:
-				return self.client.service.clearDataCenter(id)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "DataCenter does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter"})
+			return self.call("clearDataCenter", [id], {"RESOURCE_NOT_FOUND": "DataCenter does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter"})
 		
 		def deleteDataCenter(self, id):
-			try:
-				return self.client.service.deleteDataCenter(id)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "DataCenter does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter", "BAD_REQUEST": "DataCenter is not empty"})
+			return self.call("deleteDataCenter", [id], {"RESOURCE_NOT_FOUND": "DataCenter does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter", "BAD_REQUEST": "DataCenter is not empty"})
 		
 		def createServer(self, apiArgs):
 			args = { "cores": apiArgs["cores"], "ram": apiArgs["ram"] }
+			for i in ["bootFromImageId", "bootFromStorageId", "osType", "lanId"]:
+				if i in apiArgs:
+					args[i] = apiArgs[i]
 			if "dcid" in apiArgs:
 				args["dataCenterId"] = apiArgs["dcid"]
 			if "name" in apiArgs:
 				args["serverName"] = apiArgs["name"]
-			if "bootFromImageId" in apiArgs:
-				args["bootFromImageId"] = apiArgs["bootFromImageId"]
-			if "bootFromStorageId" in apiArgs:
-				args["bootFromStorageId"] = apiArgs["bootFromStorageId"]
-			if "lanId" in apiArgs:
-				args["lanId"] = apiArgs["lanId"]
 			if "internetAccess" in apiArgs:
 				args["internetAccess"] = ((apiArgs["internetAccess"].lower() + 'x')[0] == "y")
-			if "osType" in apiArgs:
-				args["osType"] = apiArgs["osType"]
-			try:
-				return self.client.service.createServer(args)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "Boot media does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server", "BAD_REQUEST": "Invalid characters in Virtual Server name / Wrong boot image type / Too many boot devices / Invalid RAM or Cores size", "OVER_LIMIT_SETTING": "Cores and/or RAM resources exceed resource limits"})
-			
+			return self.call("createServer", [args], {"RESOURCE_NOT_FOUND": "Boot media does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server", "BAD_REQUEST": "Invalid characters in Virtual Server name / Wrong boot image type / Too many boot devices / Invalid RAM or Cores size", "OVER_LIMIT_SETTING": "Cores and/or RAM resources exceed resource limits"})
+		
 		def rebootServer(self, id):
-			try:
-				return self.client.service.rebootServer(id)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err)
+			return self.call("rebootServer", [id], {})
 		
 		def updateServer(self, apiArgs):
 			args = { "serverId": apiArgs["srvid"] }
@@ -163,17 +135,10 @@ class ProfitBricks:
 			for i in ["cores", "ram", "bootFromImageId", "bootFromStorageId", "osType"]:
 				if i in apiArgs:
 					args[i] = apiArgs[i]
-			print args
-			try:
-				return self.client.service.updateServer(args)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"BAD_REQUEST": "Invalid characters in the Virtual Server name / Wrong boot image type / Too many boot images / Invalid Cores/RAM size", "OVER_LIMIT_SETTING": "Cores and/or RAM exceed limits", "RESOURCE_NOT_FOUND": "Specified Virtual Server / Boot Image / Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server"})
+			return self.call("updateServer", [args], {"BAD_REQUEST": "Invalid characters in the Virtual Server name / Wrong boot image type / Too many boot images / Invalid Cores/RAM size", "OVER_LIMIT_SETTING": "Cores and/or RAM exceed limits", "RESOURCE_NOT_FOUND": "Specified Virtual Server / Boot Image / Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server"})
 		
 		def deleteServer(self, id):
-			try:
-				return self.client.service.deleteServer(id)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "Virtual Server does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server"})
+			return self.call("deleteServer", [id], {"RESOURCE_NOT_FOUND": "Virtual Server does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server"})
 		
 		def createStorage(self, apiArgs):
 			args = { "size": apiArgs["size"] }
@@ -183,31 +148,19 @@ class ProfitBricks:
 				args["storageName"] = apiArgs["name"]
 			if "mountImageId" in apiArgs:
 				args["mountImageId"] = apiArgs["mountImageId"]
-			try:
-				return self.client.service.createStorage(args)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"BAD_REQUEST": "Invalid characters in Virtual Storage name", "OVER_LIMIT_SETTING": "Storage size exceeds limit", "UNAUTHORIZED": "User is not authorized to access the Virtual Storage"})
+			return self.call("createStorage", [args], {"BAD_REQUEST": "Invalid characters in Virtual Storage name", "OVER_LIMIT_SETTING": "Storage size exceeds limit", "UNAUTHORIZED": "User is not authorized to access the Virtual Storage"})
 		
 		def getStorage(self, id):
-			try:
-				return self.client.service.getStorage(id)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_DELETED": "The Virtual Storage has been deleted by the user", "RESOURCE_NOT_FOUND": "Specified Virtual Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Storage"})
+			return self.call("getStorage", [id], {"RESOURCE_DELETED": "The Virtual Storage has been deleted by the user", "RESOURCE_NOT_FOUND": "Specified Virtual Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Storage"})
 		
 		def connectStorageToServer(self, stoId, srvId, busType, deviceNumber = None):
 			args = { "storageId": stoId, "serverId": srvId, "busType": busType.upper() }
 			if deviceNumber != None:
 				args["deviceNumber"] = deviceNumber
-			try:
-				return self.client.service.connectStorageToServer(args)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "Specified Virtual Server or Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server or Storage", "BAD_REQUEST": "Specified Virtual Server and Storage are not in the same Data Center"})
+			return self.call("connectStorageToServer", [args], {"RESOURCE_NOT_FOUND": "Specified Virtual Server or Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server or Storage", "BAD_REQUEST": "Specified Virtual Server and Storage are not in the same Data Center"})
 		
 		def disconnectStorageFromServer(self, stoId, srvId):
-			try:
-				return self.client.service.disconnectStorageFromServer(stoId, srvId)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"PROVISIONING_NO_CHANGES": "Storage is not connected to specified server", "RESOURCE_NOT_FOUND": "Specified Virtual Server or Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server or Storage"})
+			return self.call("disconnectStorageFromServer", [stoId, srvId], {"PROVISIONING_NO_CHANGES": "Storage is not connected to specified server", "RESOURCE_NOT_FOUND": "Specified Virtual Server or Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server or Storage"})
 		
 		def updateStorage(self, apiArgs):
 			args = { "storageId": apiArgs["stoid"] }
@@ -216,31 +169,19 @@ class ProfitBricks:
 			for i in ["size", "mountImageId"]:
 				if i in apiArgs:
 					args[i] = apiArgs[i]
-			try:
-				return self.client.service.updateStorage(args)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"OVER_LIMIT_SETTING": "Storage size exceeds limit", "RESOURCE_NOT_FOUND": "Storage or Image does not exist", "BAD_REQUEST": "Invalid characters in Virtual Storage name / invalid storage size (must be > 1 GiB)", "UNAUTHORIZED": "User is not authorized to access the storage"})
+			return self.call("updateStorage", [args], {"OVER_LIMIT_SETTING": "Storage size exceeds limit", "RESOURCE_NOT_FOUND": "Storage or Image does not exist", "BAD_REQUEST": "Invalid characters in Virtual Storage name / invalid storage size (must be > 1 GiB)", "UNAUTHORIZED": "User is not authorized to access the storage"})
 		
 		def deleteStorage(self, id):
-			try:
-				return self.client.service.deleteStorage(id)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "Specified Virtual Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Storage"})
+			return self.call("deleteStorage", [id], {"RESOURCE_NOT_FOUND": "Specified Virtual Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Storage"})
 		
 		def addRomDriveToServer(self, apiArgs):
 			args = { "imageId": apiArgs["imgid"], "serverId": apiArgs["srvid"] }
 			if "devnum" in apiArgs:
 				args["deviceNumber"] = apiArgs["devnum"]
-			try:
-				return self.client.service.addRomDriveToServer(args)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "Specified Virtual Server or image does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server", "BAD_REQUEST": "Wrong image type (not a CD/DVD ISO image)"})
+			return self.call("addRomDriveToServer", [args], {"RESOURCE_NOT_FOUND": "Specified Virtual Server or image does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server", "BAD_REQUEST": "Wrong image type (not a CD/DVD ISO image)"})
 		
 		def removeRomDriveFromServer(self, imgid, srvid):
-			try:
-				return self.client.service.addRomDriveToServer(imgid, srvid)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "Specified Virtual Server or image does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server"})
+			return self.call("addRomDriveToServer", [imgid, srvid], {"RESOURCE_NOT_FOUND": "Specified Virtual Server or image does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server"})
 		
 		def createNIC(self, apiArgs):
 			args = { "serverId": apiArgs["srvid"], "lanId": apiArgs["lanid"] }
@@ -248,10 +189,7 @@ class ProfitBricks:
 				args["nicName"] = apiArgs["name"]
 			if "ip" in apiArgs:
 				args["ip"] = apiArgs["ip"]
-			try:
-				return self.client.service.createNic(args)
-			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {}) # TODO: Must get error messages from documentation
+			return self.call("createNic", [args], {}) # TODO: Must get error messages from documentation
 		
 	
 	class Formatter:
@@ -443,49 +381,53 @@ class ProfitBricks:
 
 ## Parse arguments
 
-# -u -p -auth and -s are baseArgs, everything else is opArgs
+# -u -p -auth -debug and -s are base arguments, everything else are operation arguments
 
 baseArgs = {"s": False, "debug": False } # s = short output formatting
 opArgs = {}
 i = 1
 while i < len(sys.argv):
 	arg = sys.argv[i]
-	if arg == "-":
+	if arg == "-" or arg == "":
 		continue
-	elif arg != "" and arg[0] == "-":
-		if arg.lower() == "-u":
-			if i == len(sys.argv) - 1:
-				ProfitBricks.ArgsError("Missing username")
-			baseArgs["u"] = sys.argv[i + 1]
-			i += 1
-		elif arg.lower() == "-p":
-			if (i == len(sys.argv) - 1) or (sys.argv[i + 1][0] == "-"):
-				import getpass
-				baseArgs["p"] = getpass.getpass()
-			else:
-				baseArgs["p"] = sys.argv[i + 1]
-			i += 1
-		elif arg.lower() == "-auth":
-			if i == len(sys.argv) - 1:
-				ProfitBricks.ArgsError("Missing authfile")
-			baseArgs["auth"] = sys.argv[i + 1]
-			try:
-				authFile = open(sys.argv[i + 1], "r")
-				baseArgs["u"] = authFile.readline().strip("\n")
-				baseArgs["p"] = authFile.readline().strip("\n")
-				authFile.close()
-			except:
-				ProfitBricks.ArgsError("Authfile does not exist or cannot be read")
-			i += 1
-		elif arg.lower() == "-s":
-			baseArgs["s"] = True
-		elif arg.lower() == "-debug":
-			baseArgs["debug"] = True
+	# no dash = operation
+	if arg[0] != "-":
+		baseArgs["op"] = sys.argv[i]
+		i += 1
+		continue
+	# base args
+	if arg.lower() == "-u":
+		if i == len(sys.argv) - 1:
+			ProfitBricks.ArgsError("Missing username")
+		baseArgs["u"] = sys.argv[i + 1]
+		i += 1
+	elif arg.lower() == "-p":
+		if (i == len(sys.argv) - 1) or (sys.argv[i + 1][0] == "-"):
+			import getpass
+			baseArgs["p"] = getpass.getpass()
 		else:
-			opArgs[arg[1:].lower()] = (sys.argv[i + 1] if i < len(sys.argv) - 1 else "")
-			i += 1
+			baseArgs["p"] = sys.argv[i + 1]
+		i += 1
+	elif arg.lower() == "-auth":
+		if i == len(sys.argv) - 1:
+			ProfitBricks.ArgsError("Missing authfile")
+		baseArgs["auth"] = sys.argv[i + 1]
+		try:
+			authFile = open(sys.argv[i + 1], "r")
+			baseArgs["u"] = authFile.readline().strip("\n")
+			baseArgs["p"] = authFile.readline().strip("\n")
+			authFile.close()
+		except:
+			ProfitBricks.ArgsError("Authfile does not exist or cannot be read")
+		i += 1
+	elif arg.lower() == "-s":
+		baseArgs["s"] = True
+	elif arg.lower() == "-debug":
+		baseArgs["debug"] = True
+	# if not base arg, then it is operation arg
 	else:
-		baseArgs["op"] = sys.argv[i];
+		opArgs[arg[1:].lower()] = (sys.argv[i + 1] if i < len(sys.argv) - 1 else "")
+		i += 1
 	i += 1
 
 ## Load auth from default.auth if exists
@@ -501,10 +443,8 @@ if "u" not in baseArgs or "p" not in baseArgs:
 
 ## Verify that all required arguments are present
 
-if "u" not in baseArgs:
-	ProfitBricks.ArgsError("Missing username")
-if "p" not in baseArgs:
-	ProfitBricks.ArgsError("Missing password")
+if "u" not in baseArgs or "p" not in baseArgs:
+	ProfitBricks.ArgsError("Missing authentication")
 if "op" not in baseArgs:
 	ProfitBricks.ArgsError("Missing operation")
 
@@ -605,7 +545,8 @@ operations = {
 	}
 }
 
-## Instantiate API and API formatter
+
+## Instantiate API and API output formatter
 
 api = ProfitBricks.API(baseArgs["u"], baseArgs["p"])
 formatter = ProfitBricks.Formatter()
@@ -615,16 +556,17 @@ if baseArgs["debug"] == True:
 	logging.getLogger('suds.client').setLevel(logging.DEBUG)
 	#logging.getLogger('suds.transport').setLevel(logging.DEBUG)
 
+
 ## Perform requested operation and display formatted output
 
 opFound = False
-for operation in operations:
-	if baseArgs["op"].replace("-", "").lower() == operation.replace("-", "").lower():
-		if "args" in operations[operation]:
-			for requiredArg in operations[operation]["args"]:
+for op in operations:
+	if baseArgs["op"].replace("-", "").lower() == op.replace("-", "").lower():
+		if "args" in operations[op]:
+			for requiredArg in operations[op]["args"]:
 				if not requiredArg in opArgs or opArgs[requiredArg] == "":
-					ProfitBricks.ArgsError("Operation '%s' is missing argument '%s'" % (baseArgs["op"], "-" + requiredArg))
-		operations[operation]["lambda"]()
+					ProfitBricks.ArgsError("op '%s' is missing argument '%s'" % (baseArgs["op"], "-" + requiredArg))
+		operations[op]["lambda"]()
 		opFound = True
 if not opFound:
 	print "Unknown operation:", baseArgs["op"]
@@ -633,5 +575,4 @@ if not opFound:
 
 if not baseArgs["s"]:
 	print
-
 
