@@ -70,15 +70,19 @@ class ProfitBricks:
 	
 	class API:
 		
-		url = "https://api.profitbricks.com/1.1/wsdl";
+		url = "https://api.profitbricks.com/1.1/wsdl"
+		debug = False
 		
-		def __init__(self, username, password):
+		def __init__(self, username, password, debug = False):
+			self.debug = debug
 			try:
 				self.client = suds.client.Client(url = self.url, username = username, password = password)
 			except suds.transport.TransportError as (err):
 				ProfitBricks.APIError(err, {"UNAUTHORIZED": "Invalid username or password"});
 		
 		def call(self, func, args, customErrorMessages):
+			if (self.debug):
+				print "# Calling %s %s" % (func, args)
 			try:
 				method = getattr(self.client.service, func)
 				return method(*args)
@@ -548,13 +552,14 @@ operations = {
 
 ## Instantiate API and API output formatter
 
-api = ProfitBricks.API(baseArgs["u"], baseArgs["p"])
+api = ProfitBricks.API(baseArgs["u"], baseArgs["p"], debug = baseArgs["debug"])
 formatter = ProfitBricks.Formatter()
 if baseArgs["s"]:
 	formatter.shortFormat()
 if baseArgs["debug"] == True:
-	logging.getLogger('suds.client').setLevel(logging.DEBUG)
+	#logging.getLogger('suds.client').setLevel(logging.DEBUG)
 	#logging.getLogger('suds.transport').setLevel(logging.DEBUG)
+	pass
 
 
 ## Perform requested operation and display formatted output
