@@ -64,6 +64,19 @@ must contain the authentication username on the first line and password on the s
 .It Fl s
 Enable short output formatting (display less information).
 .El
+.\" OVERVIEW
+.Sh OVERVIEW
+.Bl -tag -width Ds
+.It DataCenters: createDataCenter getDataCenter getDataCenterState getAllDataCenters updateDataCenter clearDataCenter deleteDataCenter
+.It Servers: createServer getServer rebootServer updateServer deleteServer
+.It Storages: createStorage getStorage connectStorageToServer disconnectStorageFromServer updateStorage deleteStorage
+.It CD/DVD-ROMs: addRomDriveToServer removeRomDriveFromServer
+.It Images: setImageOsType getImage getAllImages deleteImage
+.It NICs: createNic getNic setInternetAccess updateNic deleteNic
+.It IPs: reservePubilcIpBlock addPublicIpToNic getAllPublicIpBlocks removePublicIpFromNic releasePublicIpBlock
+.It Load balancers: ...
+.It Firewalls: ...
+.El
 .\" VIRTUAL SERVER OPERATIONS AND ARGUMENTS
 .Sh VIRTUAL SERVER OPERATIONS AND ARGUMENTS
 .Nm
@@ -283,6 +296,30 @@ Assigns or reassigns an image to the storage.
 .It Ar deleteStorage
 Deletes an existing virtual storage device.
 .El
+.\" CD/DVD-ROM DRIVE
+.Sh CD/DVD-ROM DRIVE OPERATIONS AND ARGUMENTS
+.Nm
+.Fl u Ar username Fl p Ar password Ar operation Fl imgid Ar imageId Op ...
+.Pp
+The
+.Ar operation
+may be:
+.Bl -tag -width Ds
+.It Ar addRomDriveToServer
+Adds a CD/DVD-ROM drive to an existing virtual server. Maximum CD/DVD-ROM drives are currently 2 (API v1.1).
+.Bl -tag -width Ds
+.It Fl srvid Ar serverId
+Idendifier of the target virtual server.
+.It Op Fl devnum Ar deviceNumber
+Device number of the CD/DVD-ROM drive connected to the server. If no device number is set, a new device number will be assigned to the CD/DVD-ROM drive automatically.
+.El
+.It Ar removeDriveFromServer
+Removes a CD/DVD-ROM drive from an existing virtual server.
+.Bl -tag -width Ds
+.It Fl srvid Ar serverId
+Idendifier of the target virtual server.
+.El
+.El
 .\" EXIT STATUS
 .Sh EXIT STATUS
 .Ex -std
@@ -291,7 +328,13 @@ Deletes an existing virtual storage device.
 (should give an overview of the most common error messages from your program and how to cope with them. There is no need to explain system error error messages (from perror(3)) or fatal signals (from psignal(3)) as they can appear during execution of any program.)
 .\" TO DO
 .Sh TO DO
-Everything.
+.Bl -tag -width Ds
+.It Images
+.It NICs
+.It IPs
+.It Load balancers
+.It Firewalls
+.El
 .\" AUTHOR
 .Sh AUTHOR
 Report bugs to <bugs at profitbricks dot com>

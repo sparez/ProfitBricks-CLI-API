@@ -60,7 +60,7 @@ class ProfitBricks:
 			error = self.codeToError[code if code in self.codeToError else 0]
 			errorMessage = customErrorMessages[error] if error in customErrorMessages else self.defaultErrorMessages[error]
 			print "Error %d: %s: %s." % (code, error, errorMessage)
-			sys.exit(code)
+			sys.exit(2)
 	
 	class ArgsError:
 		
@@ -212,7 +212,7 @@ class ProfitBricks:
 		def updateStorage(self, apiArgs):
 			args = { "storageId": apiArgs["stoid"] }
 			if "name" in apiArgs:
-				args["serverName"] = apiArgs["name"]
+				args["storageName"] = apiArgs["name"]
 			for i in ["size", "mountImageId"]:
 				if i in apiArgs:
 					args[i] = apiArgs[i]
@@ -232,9 +232,26 @@ class ProfitBricks:
 			if "devnum" in apiArgs:
 				args["deviceNumber"] = apiArgs["devnum"]
 			try:
-				return self.client.service.addRomDriveToServer(arg)
+				return self.client.service.addRomDriveToServer(args)
 			except suds.transport.TransportError as (err):
 				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "Specified Virtual Server or image does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server", "BAD_REQUEST": "Wrong image type (not a CD/DVD ISO image)"})
+		
+		def removeRomDriveFromServer(self, imgid, srvid):
+			try:
+				return self.client.service.addRomDriveToServer(imgid, srvid)
+			except suds.transport.TransportError as (err):
+				ProfitBricks.APIError(err, {"RESOURCE_NOT_FOUND": "Specified Virtual Server or image does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server"})
+		
+		def createNIC(self, apiArgs):
+			args = { "serverId": apiArgs["srvid"], "lanId": apiArgs["lanid"] }
+			if "name" in apiArgs:
+				args["nicName"] = apiArgs["name"]
+			if "ip" in apiArgs:
+				args["ip"] = apiArgs["ip"]
+			try:
+				return self.client.service.createNic(args)
+			except suds.transport.TransportError as (err):
+				ProfitBricks.APIError(err, {}) # TODO: Must get error messages from documentation
 		
 	
 	class Formatter:
@@ -278,6 +295,8 @@ class ProfitBricks:
 		printDisconnectStorageFromServer = operationCompleted
 		printUpdateStorage = operationCompleted
 		printAddRomDriveToServer = operationCompleted
+		printRemoveRomDriveFromServer = operationCompleted
+		printCreateNIC = operationCompleted
 		
 		def printCreateDataCenter(self, response):
 			self.out("Data center ID: %s", response["dataCenterId"])
@@ -348,7 +367,11 @@ class ProfitBricks:
 				self.indent(1)
 				self.out("Size: %s GiB", st["size"])
 				self.out("Connected to VM ID: %s", (" ; ".join(storage.serverIds)) if "serverIds" in storage else "ERROR")
-				self.out("Mount image ID: %s", (storage.mountImage.imageId if "mountImage" in storage else "none"))
+				#self.out("Mount image ID: %s", (storage.mountImage.imageId if "mountImage" in storage else "none"))
+				if "mountImage" in storage:
+					self.printImage(storage.mountImage)
+				else:
+					self.out("No mount image")
 				self.indent(-1)
 			else:
 				self.out()
@@ -361,16 +384,24 @@ class ProfitBricks:
 				self.out("Mount image:")
 				self.indent(1)
 				if "mountImage" in storage:
-					self.printImage(self, storage.mountImage)
+					self.printImage(storage.mountImage)
 				else:
 					self.out("No image")
 				self.indent(-1)
+		
+		def printImage(self, image):
+			if self.short:
+				self.out("Image %s (%s)", image["imageName"], image["imageId"])
+			else:
+				self.out()
+				self.out("Name: %s", image["imageName"])
+				self.out("Image ID: %s", image["imageId"])
 		
 		def printDataCenter(self, dataCenter):
 			dc = self.requireArgs(dataCenter, ["dataCenterName", "provisioningState", "dataCenterVersion"])
 			if self.short:
 				self.out("%s is %s", dc["dataCenterName"], dc["provisioningState"])
-				self.out("Servers:")
+				self.out("Servers (%d):", len(dataCenter.servers) if "servers" in dataCenter else 0)
 				self.indent(1);
 				if "servers" in dataCenter:
 					for server in dataCenter.servers:
@@ -378,7 +409,7 @@ class ProfitBricks:
 				else:
 					self.out("ERROR")
 				self.indent(-1);
-				self.out("Storages:")
+				self.out("Storages (%s):", len(dataCenter.storages) if "storages" in dataCenter else 0)
 				self.indent(1);
 				if "storages" in dataCenter:
 					for storage in dataCenter.storages:
@@ -392,7 +423,7 @@ class ProfitBricks:
 				self.out("Provisioning state: %s", dc["provisioningState"])
 				self.out("Version: %s", dc["dataCenterVersion"])
 				self.out()
-				self.out("Servers:")
+				self.out("Servers (%d):", len(dataCenter.servers) if "servers" in dataCenter else 0)
 				self.indent(1)
 				if "servers" in dataCenter:
 					for server in dataCenter.servers:
@@ -401,7 +432,7 @@ class ProfitBricks:
 					self.out("ERROR")
 				self.indent(-1)
 				self.out()
-				self.out("Storages:")
+				self.out("Storages (%s):", len(dataCenter.storages) if "storages" in dataCenter else 0)
 				self.indent(1);
 				if "storages" in dataCenter:
 					for storage in dataCenter.storages:
@@ -554,7 +585,19 @@ operations = {
 	},
 	"addRomDriveToServer": {
 		"args": ["imgid", "srvid"],
-		"lambda": lambda: formatter.printAddRomDriveToServer(api.addRomDrivetoServer(opArgs))
+		"lambda": lambda: formatter.printAddRomDriveToServer(api.addRomDriveToServer(opArgs))
+	},
+	"removeRomDriveFromServer": {
+		"args": ["imgid", "srvid"],
+		"lambda": lambda: formatter.printRemoveRomDriveFromServer(api.removeRomDriveFromServer(opArgs))
+	},
+	"setImageOsType": {
+		"args": ["imgid", "ostype"],
+		"lambda": lambda: formatter.printSetImageOsType(api.setImageOsType(opArgs["imgid"], opArgs["ostype"]))
+	},
+	"createNIC": {
+		"args": ["srvid", "lanid"],
+		"lambda": lambda: formatter.printCreateNIC(api.createNIC(opArgs))
 	},
 	"getNIC": {
 		"args": ["nicid"],

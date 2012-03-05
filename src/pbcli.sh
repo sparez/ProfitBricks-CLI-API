@@ -22,7 +22,8 @@ while [ true ]; do
 			break
 			;;
 		*)
-			./pbapi.py $default_args $command
+			./pbapi.py $default_args $command ; exit_code=$?
+			if [ "$exit_code" != "0" ]; then echo "Exit code: $exit_code"; fi
 			;;
 	esac
 done
