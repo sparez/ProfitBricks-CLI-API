@@ -25,37 +25,19 @@ from suds.transport import Request
 import logging
 logging.basicConfig(level=logging.INFO)
 
+## We need to patch suds.client.SoapClient because it doesn't throw an exception in case of bad authentication
+class SudsClientPatched(suds.client.SoapClient):
+	_oldFailed = suds.client.SoapClient.failed
+	def failed(self, binding, error):
+		if error.httpcode == 500:
+			return SudsClientPatched._oldFailed(self, binding, error)
+		else:
+			raise error
+suds.client.SoapClient = SudsClientPatched
+## End patch
+
 class ProfitBricks:
 
-	class APIError:
-		
-		codeToError = {
-			0: "UNKNOWN_ERROR",
-			400: "BAD_REQUEST",
-			401: "UNAUTHORIZED",
-			404: "RESOURCE_NOT_FOUND",
-			409: "PROVISIONING_IN_PROGRESS",
-			410: "RESOURCE_DELETED",
-			413: "OVER_LIMIT_SETTING",
-			503: "SERVER_EXCEEDED_CAPACITY",
-		}
-		
-		defaultErrorMessages = {
-			"UNKNOWN_ERROR": "Unknown error",
-			"BAD_REQUEST": "Invalid name parameters, missing mandatory parameters, etc",
-			"UNAUTHORIZED": "The request resource does not exist or this user is not authorized to access it",
-			"PROVISIONING_IN_PROGRESS": "Operation cannot be executed. The user has to wait, until the provisioning process is finished and the data center is available again",
-			"RESOURCE_NOT_FOUND": "Resource not found",
-			"OVER_LIMIT_SETTING": "Too many resources"
-		}
-		
-		def __init__(self, transportError, customErrorMessages = {}):
-			code = int(transportError.fault.detail.ProfitbricksServiceFault.httpCode)
-			error = self.codeToError[code if code in self.codeToError else 0]
-			errorMessage = customErrorMessages[error] if error in customErrorMessages else self.defaultErrorMessages[error]
-			print "Error %d: %s: %s." % (code, error, errorMessage)
-			sys.exit(2)
-	
 	class ArgsError:
 		
 		def __init__(self, message = None):
@@ -72,18 +54,28 @@ class ProfitBricks:
 			try:
 				self.client = suds.client.Client(url = self.url, username = username, password = password)
 			except suds.transport.TransportError as (err):
-				ProfitBricks.APIError(err, {"UNAUTHORIZED": "Invalid username or password"});
+				if err.httpcode == 401:
+					print "Error: Invalid username or password"
+				else:
+					print "Error: Unknown error: %s" % str(err)
+				sys.exit(3)
 		
 		# Calls the func() function using SOAP and the given arguments list (must always be an array)
-		# If the call fails, the customErrorMessages hash will be used to extend the ProfitBricks.APIError.defaultErrorMessages hash (for making errors more human-readable)
-		def call(self, func, args, customErrorMessages):
+		def call(self, func, args, errors = {}):
 			if (self.debug):
 				print "# Calling %s %s" % (func, args)
 			try:
 				method = getattr(self.client.service, func)
 				return method(*args)
 			except suds.WebFault as (err):
-				ProfitBricks.APIError(err, customErrorMessages)
+				print "Error: %s" % str(err)
+				sys.exit(2)
+			except suds.transport.TransportError as (err):
+				if err.httpcode == 401:
+					print "Error: Invalid username or password"
+				else:
+					print "Error: Unknown error: %s" % str(err)
+				sys.exit(3)
 		
 		# Returns the userArgs hash, but replaces the keys with the values found in translation and only the ones found in translation
 		# eg, parseArgs({"a": 10, "b": 20, "c": 30}, {"a": "a", "b": "B"}) => {"a": 10, "B": 20}
@@ -208,7 +200,8 @@ class ProfitBricks:
 			return self.call("addPublicIpToNic", [ip, nicId], errors)
 		
 		def getAllPublicIPBlocks(self):
-			return self.call("getAllPublicIpBlocks", [], {})
+			result = self.call("getAllPublicIpBlocks", [], {})
+			return result
 		
 		def removePublicIPFromNIC(self, ip, nicId):
 			errors = {"RESOURCE_NOT_FOUND": "Specified IP/NIC does not exist", "UNAUTHORIZED": "User is not authorized to access the NIC / reserved IP"}
@@ -415,12 +408,18 @@ class ProfitBricks:
 					self.out("(none)")
 				self.indent(-1);
 		
-		def printReservePublicIPBlock(self, ipBlock):
-			self.out("Block ID: %s", ipBlock.blockId)
-			print dir(ipBlock)
+		def printPublicIPBlock(self, ipBlock):
+			if not self.short:
+				self.out()
+			self.out("Block ID: %s", ipBlock["blockId"])
+			self.out("IP addresses: %s", " ; ".join(ipBlock["ips"]))
 		
 		def printGetAllPublicIPBlocks(self, blockList):
-			print dir(blockList)
+			for ipBlock in blockList:
+				ips = []
+				for ipObj in ipBlock.publicIps:
+					ips.append(ipObj.ip)
+				self.printPublicIPBlock({"blockId": ipBlock.blockId, "ips": ips})
 	
 	class Helper:
 	
@@ -605,7 +604,7 @@ operations = {
 	},
 	"reservePublicIpBlock": {
 		"args": ["size"],
-		"lambda": lambda: formatter.printReservePublicIPBlock(api.reservePublicIPBlock(opArgs["size"]))
+		"lambda": lambda: formatter.printPublicIPBlock(api.reservePublicIPBlock(opArgs["size"]))
 	},
 	"addPublicIpToNic": {
 		"args": ["ip", "nicid"],
@@ -653,7 +652,7 @@ for op in operations:
 					args = ""
 					for requiredArg in operations[op]["args"]:
 						args = args + "-" + requiredArg + " "
-					ProfitBricks.ArgsError("operation '%s' is requires these arguments: %s" % (baseArgs["op"], args)) # '%s'" % (baseArgs["op"], "-" + requiredArg))
+					ProfitBricks.ArgsError("operation '%s' requires these arguments: %s" % (baseArgs["op"], args)) # '%s'" % (baseArgs["op"], "-" + requiredArg))
 		opFound = op
 
 if opFound is None:
