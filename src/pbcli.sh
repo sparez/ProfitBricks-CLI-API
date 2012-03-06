@@ -1,5 +1,10 @@
 #!/bin/bash
 
+version="1.1"
+help="ProfitBricks API CLI Copyright 2012 ProfitBricks GmbH, licensed under Apache 2.0 ( http://www.apache.org/licenses/LICENSE-2.0 )\nType 'exit' to leave, 'help' for help, 'list' to list available operations or 'last' to repeat your last command."
+
+echo -e "\n$help"
+
 # Read default arguments
 echo ""
 if [ -e default.auth ]; then
@@ -8,7 +13,6 @@ if [ -e default.auth ]; then
 else
 	read -e -p "Default arguments (usually -u user -p pass): " default_args
 fi
-echo "Type 'exit' to leave, 'help' for help, 'list' to list available operations or 'last' to repeat your last command."
 echo ""
 
 # Enable autocomplete
@@ -33,6 +37,7 @@ while [ true ]; do
 			;;
 		"help" | "?")
 			man -l pbapi.1
+			echo -e "$help"
 			;;
 		"exit" | "quit" | "bye")
 			break
