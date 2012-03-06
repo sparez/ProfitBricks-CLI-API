@@ -7,11 +7,15 @@ echo -e "\n$help"
 
 # Read default arguments
 echo ""
-if [ -e default.auth ]; then
-	default_args="-auth default.auth"
-	echo "Using -auth default.auth as default arguments"
+default_args="$@"
+if [ -z "$default_args" ]; then
+	if [ -f "default.auth" ]; then
+		echo "Found default.auth file, no default arguments needed"
+	else
+		read -e -p "Default arguments (-u user -p pass | -auth authfile): " default_args
+	fi
 else
-	read -e -p "Default arguments (usually -u user -p pass): " default_args
+	echo "Using custom default arguments"
 fi
 echo ""
 
