@@ -16,7 +16,7 @@ fi
 echo ""
 
 # Enable autocomplete
-ops="get-all-datacenters create-datacenter get-datacenter update-datacenter clear-datacenter delete-datacenter create-server get-server reboot-server update-server delete-server create-storage get-storage update-storage delete-storage connect-storage-to-server disconnect-storage-from-server add-romdrive-to-server remove-romdrive-from-server set-image-ostype create-nic get-nic"
+ops=`./pbapi.py list`
 set -o emacs
 bind 'set show-all-if-ambiguous on'
 bind 'set completion-ignore-case on'
@@ -41,11 +41,6 @@ while [ true ]; do
 			;;
 		"exit" | "quit" | "bye")
 			break
-			;;
-		"list")
-			ops_pad=""
-			for i in $ops; do ops_pad="$ops_pad"`printf %-39s $i`; done
-			echo "$ops_pad" | fold -s
 			;;
 		"last")
 			echo "Issuing last command: $last"

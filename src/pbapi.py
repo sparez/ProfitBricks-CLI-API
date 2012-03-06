@@ -18,6 +18,7 @@
 
 import sys
 import suds
+import re
 from suds.transport.http import HttpAuthenticated
 from suds.transport import Request
 
@@ -181,10 +182,41 @@ class ProfitBricks:
 			args = self.parseArgs(userArgs, {"srvid": "serverId", "lanid": "lanId", "name": "nicName", "ip": "ip"})
 			return self.call("createNic", [args], {}) # TODO: Must get error messages from documentation
 		
+		def getNIC(self, id):
+			errors = {"RESOURCE_NOT_FOUND": "Specified NIC does not exist", "RESOURCE_DELETED": "Specified NIC has been deleted by the user", "UNAUTHORIZED": "User is not authorized to access the Virtual Server / public IP"}
+			return self.call("getNic", [id], errors)
+		
 		def setInternetAccess(self, dcid, lanid, internetAccess):
 			errors = {"RESOURCE_NOT_FOUND": "Specified NIC/server does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server / Data Center"}
 			return self.call("setInternetAccess", [dcid, lanid, internetAccess], errors)
 		
+		def updateNIC(self, userArgs):
+			args = self.parseArgs(userArgs, {"nicid": "nicId", "lanid": "lanID", "ip": "ip", "name": "nicName"})
+			errors = {"BAD_REQUEST": "Invalid private IP address", "RESOURCE_NOT_FOUND": "Specified NIC/server does not exist", "UNAUTHORIZED": "User is not authorized to access the NIC or user is not owner of specified private IP"}
+			return self.call("updateNic", [args], errors)
+		
+		def deleteNIC(self, id):
+			errors = {"RESOURCE_NOT_FOUND": "Specified NIC does not exist", "UNAUTHORIZED": "User is not authorized to access the NIC"}
+			return self.call("deleteNic", [id], errors)
+		
+		def reservePublicIPBlock(self, size):
+			errors = {"SERVER_EXCEEDED_CAPACITY": "No free IP address blocks are currently available for reservation"}
+			return self.call("reservePublicIpBlock", [size], errors)
+		
+		def addPublicIPToNIC(self, ip, nicId):
+			errors = {"RESOURCE_NOT_FOUND": "Specified IP/NIC does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server / NIC / reserved IP"}
+			return self.call("addPublicIpToNic", [ip, nicId], errors)
+		
+		def getAllPublicIPBlocks(self):
+			return self.call("getAllPublicIpBlocks", [], {})
+		
+		def removePublicIPFromNIC(self, ip, nicId):
+			errors = {"RESOURCE_NOT_FOUND": "Specified IP/NIC does not exist", "UNAUTHORIZED": "User is not authorized to access the NIC / reserved IP"}
+			return self.call("removePublicIpFromNic", [ip, nicId], errors)
+		
+		def releasePublicIPBlock(self, id):
+			errors = {"BAD_REQUEST": "One or more IPs of the IP block are still in use by a NIC", "RESOURCE_NOT_FOUND": "Specified IP block does not exist", "UNAUTHORIZED": "User is not the owner of the public IP block"}
+			return self.call("releasePublicIpBlock", [id], errors)
 	
 	class Formatter:
 		
@@ -235,6 +267,11 @@ class ProfitBricks:
 		printCreateNIC = operationCompleted
 		printEnableInternetAccess = operationCompleted
 		printDisableInternetAccess = operationCompleted
+		printUpdateNIC = operationCompleted
+		printDeleteNIC = operationCompleted
+		printAddPublicIPToNIC = operationCompleted
+		printRemovePublicIPFromNIC = operationCompleted
+		printReleasePublicIPBlock = operationCompleted
 		
 		def printCreateDataCenter(self, response):
 			self.out("Data center ID: %s", response["dataCenterId"])
@@ -377,6 +414,28 @@ class ProfitBricks:
 				else:
 					self.out("(none)")
 				self.indent(-1);
+		
+		def printReservePublicIPBlock(self, ipBlock):
+			self.out("Block ID: %s", ipBlock.blockId)
+			print dir(ipBlock)
+		
+		def printGetAllPublicIPBlocks(self, blockList):
+			print dir(blockList)
+	
+	class Helper:
+	
+		@staticmethod
+		def camelCaseToDash(s):
+			s1 = re.sub('(.)([A-Z][a-z]+)', r'\1-\2', s)
+			return re.sub('([a-z0-9])([A-Z])', r'\1-\2', s1).lower()
+		
+		@staticmethod
+		def printOperations(operations):
+			for op in operations:
+				if op[0] != "@":
+					print ProfitBricks.Helper.camelCaseToDash(op)
+			sys.exit(0)
+
 
 ## Parse arguments
 
@@ -430,21 +489,6 @@ while i < len(sys.argv):
 		i += 1
 	i += 1
 
-## Load auth from default.auth if exists
-
-if "u" not in baseArgs or "p" not in baseArgs:
-	try:
-		authFile = open("default.auth", "r")
-		baseArgs["u"] = authFile.readline().strip("\n")
-		baseArgs["p"] = authFile.readline().strip("\n")
-		authFile.close()
-	except:
-		pass
-
-## Verify that all required arguments are present
-
-if "u" not in baseArgs or "p" not in baseArgs:
-	ProfitBricks.ArgsError("Missing authentication")
 if "op" not in baseArgs:
 	ProfitBricks.ArgsError("Missing operation")
 
@@ -550,28 +594,59 @@ operations = {
 	"disableInternetAccess": {
 		"args": ["dcid", "lanid"],
 		"lambda": lambda: formatter.printDisableInternetAccess(api.setInternetAccess(opArgs["dcid"], opArgs["lanid"], False))
+	},
+	"updateNic": {
+		"args": ["nicid", "lanid"],
+		"lambda": lambda: formatter.printUpdateNIC(api.updateNIC(opArgs))
+	},
+	"deleteNic": {
+		"args": ["nicid"],
+		"lambda": lambda: formatter.printDeleteNIC(api.deleteNIC(opArgs["nicid"]))
+	},
+	"reservePublicIpBlock": {
+		"args": ["size"],
+		"lambda": lambda: formatter.printReservePublicIPBlock(api.reservePublicIPBlock(opArgs["size"]))
+	},
+	"addPublicIpToNic": {
+		"args": ["ip", "nicid"],
+		"lambda": lambda: formatter.printAddPublicIPToNIC(api.addPublicIPToNIC(opArgs["ip"], opArgs["nicid"]))
+	},
+	"getAllPublicIpBlocks": {
+		"args": [],
+		"lambda": lambda: formatter.printGetAllPublicIPBlocks(api.getAllPublicIPBlocks())
+	},
+	"removePublicIpFromNic": {
+		"args": ["ip", "nicid"],
+		"lambda": lambda: formatter.printRemovePublicIPFromNIC(api.removePublicIPFromNIC(opArgs["ip"], opArgs["nicid"]))
+	},
+	"releasePublicIpBlock": {
+		"args": ["blockid"],
+		"lambda": lambda: formatter.printReleasePublicIPBlock(api.releasePublicIPBlock(opArgs["blockid"]))
+	},
+	"@list": {
+		"args": [],
+		"lambda": lambda: ProfitBricks.Helper.printOperations(operations)
 	}
 }
 
+## Load auth from default.auth if exists
 
-## Instantiate API and API output formatter
-
-api = ProfitBricks.API(baseArgs["u"], baseArgs["p"], debug = baseArgs["debug"])
-formatter = ProfitBricks.Formatter()
-if baseArgs["s"]:
-	formatter.shortFormat()
-if baseArgs["debug"] == True:
-	logging.getLogger("suds.server").setLevel(logging.DEBUG)
-	logging.getLogger("suds.client").setLevel(logging.DEBUG)
-	logging.getLogger("suds.transport").setLevel(logging.DEBUG)
-	pass
+if "u" not in baseArgs or "p" not in baseArgs:
+	try:
+		authFile = open("default.auth", "r")
+		baseArgs["u"] = authFile.readline().strip("\n")
+		baseArgs["p"] = authFile.readline().strip("\n")
+		authFile.close()
+	except:
+		pass
 
 
-## Perform requested operation and display formatted output
+## Find requested operation
 
-opFound = False
+opFound = None
+userOperation = baseArgs["op"].replace("-", "").lower()
 for op in operations:
-	if baseArgs["op"].replace("-", "").lower() == op.replace("-", "").lower():
+	if userOperation == op.replace("-", "").lower() or '@' + userOperation == op.replace("-", "").lower():
 		if "args" in operations[op]:
 			for requiredArg in operations[op]["args"]:
 				if not requiredArg in opArgs or opArgs[requiredArg] == "":
@@ -579,12 +654,36 @@ for op in operations:
 					for requiredArg in operations[op]["args"]:
 						args = args + "-" + requiredArg + " "
 					ProfitBricks.ArgsError("operation '%s' is requires these arguments: %s" % (baseArgs["op"], args)) # '%s'" % (baseArgs["op"], "-" + requiredArg))
-		operations[op]["lambda"]()
-		opFound = True
-if not opFound:
-	print "Unknown operation:", baseArgs["op"]
+		opFound = op
+
+if opFound is None:
 	print sys.argv
+	print "Unknown operation:", baseArgs["op"]
 	sys.exit(2)
+
+
+if opFound[0] != "@": # @ operations don't require authentication
+	## Instantiate API and API output formatter
+	
+	if "u" not in baseArgs or "p" not in baseArgs:
+		ProfitBricks.ArgsError("Missing authentication")
+	
+	api = ProfitBricks.API(baseArgs["u"], baseArgs["p"], debug = baseArgs["debug"])
+	formatter = ProfitBricks.Formatter()
+	if baseArgs["s"]:
+		formatter.shortFormat()
+	if baseArgs["debug"] == True:
+		logging.getLogger("suds.server").setLevel(logging.DEBUG)
+		logging.getLogger("suds.client").setLevel(logging.DEBUG)
+		logging.getLogger("suds.transport").setLevel(logging.DEBUG)
+	else:
+		logging.getLogger('suds.client').setLevel(logging.CRITICAL) # hide soap faults
+
+
+## Perform operation
+
+operations[opFound]["lambda"]()
+
 
 if not baseArgs["s"]:
 	print
