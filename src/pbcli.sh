@@ -50,6 +50,7 @@ while [ true ]; do
 			last=$command
 			./pbapi.py $default_args $command ; exit_code=$?
 			if [ "$exit_code" != "0" ]; then echo "Exit code: $exit_code"; fi
+			echo ""
 			;;
 	esac
 done

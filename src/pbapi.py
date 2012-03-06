@@ -61,7 +61,7 @@ class ProfitBricks:
 				sys.exit(3)
 		
 		# Calls the func() function using SOAP and the given arguments list (must always be an array)
-		def call(self, func, args, errors = {}):
+		def call(self, func, args):
 			if (self.debug):
 				print "# Calling %s %s" % (func, args)
 			try:
@@ -87,129 +87,119 @@ class ProfitBricks:
 			return args
 		
 		def getAllDataCenters(self):
-			return self.call("getAllDataCenters", [], {})
+			return self.call("getAllDataCenters", [])
 		
 		def getDataCenter(self, id):
-			return self.call("getDataCenter", [id], {"RESOURCE_NOT_FOUND": "Data Center does not exist"})
+			return self.call("getDataCenter", [id])
 		
 		def getServer(self, id):
-			return self.call("getServer", [id], {"RESOURCE_NOT_FOUND": "Data Center does not exist"})
+			return self.call("getServer", [id])
 		
 		def createDataCenter(self, name):
-			return self.call("createDataCenter", [name], {"BAD_REQUEST": "Invalid characters in DataCenter name"})
+			return self.call("createDataCenter", [name])
 		
 		def getDataCenterState(self, id):
-			return self.call("getDataCenterState", [id], {"RESOURCE_NOT_FOUND": "DataCenter does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter"})
+			return self.call("getDataCenterState", [id])
 		
 		def updateDataCenter(self, userArgs):
 			args = self.parseArgs(userArgs, {"dcid": "dataCenterId", "name": "dataCenterName"})
-			errors = {"BAD_REQUEST": "Invalid characters in DataCenter name", "RESOURCE_NOT_FOUND": "Specified DataCenter ID does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter"}
-			return self.call("updateDataCenter", [args], errors)
+			return self.call("updateDataCenter", [args])
 		
 		def clearDataCenter(self, id):
-			errors = {"RESOURCE_NOT_FOUND": "DataCenter does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter"}
-			return self.call("clearDataCenter", [id], errors)
+			return self.call("clearDataCenter", [id])
 		
 		def deleteDataCenter(self, id):
-			errors = {"RESOURCE_NOT_FOUND": "DataCenter does not exist", "UNAUTHORIZED": "User is not authorized to access the DataCenter", "BAD_REQUEST": "DataCenter is not empty"}
-			return self.call("deleteDataCenter", [id], errors)
+			return self.call("deleteDataCenter", [id])
 		
 		def createServer(self, userArgs):
 			args = self.parseArgs(userArgs, {"cores": "cores", "ram": "ram", "bootFromStorageId": "bootFromStorageId", "bootFromImageId": "bootFromImageId", "osType": "osType", "lanId": "lanId", "dcid": "dataCenterId", "name": "serverName"})
 			if "internetAccess" in userArgs:
 				args["internetAccess"] = ((userArgs["internetAccess"].lower() + "x")[0] == "y")
-			errors = {"RESOURCE_NOT_FOUND": "Boot media does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server", "BAD_REQUEST": "Invalid characters in Virtual Server name / Wrong boot image type / Too many boot devices / Invalid RAM or Cores size", "OVER_LIMIT_SETTING": "Cores and/or RAM resources exceed resource limits"}
-			return self.call("createServer", [args], errors)
+			return self.call("createServer", [args])
 		
 		def rebootServer(self, id):
-			return self.call("rebootServer", [id], {})
+			return self.call("rebootServer", [id])
 		
 		def updateServer(self, userArgs):
 			args = self.parseArgs(userArgs, {"srvid": "serverId", "name": "serverName", "cores": "cores", "ram": "ram", "bootFromImageId": "bootFromImageId", "bootFromStorageId": "bootFromStorageId", "osType": "osType"})
-			errors = {"BAD_REQUEST": "Invalid characters in the Virtual Server name / Wrong boot image type / Too many boot images / Invalid Cores/RAM size", "OVER_LIMIT_SETTING": "Cores and/or RAM exceed limits", "RESOURCE_NOT_FOUND": "Specified Virtual Server / Boot Image / Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server"}
-			return self.call("updateServer", [args], errors)
+			return self.call("updateServer", [args])
 		
 		def deleteServer(self, id):
-			errors = {"RESOURCE_NOT_FOUND": "Virtual Server does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server"}
-			return self.call("deleteServer", [id], errors)
+			return self.call("deleteServer", [id])
 		
 		def createStorage(self, userArgs):
 			args = self.parseArgs(userArgs, {"dcid": "dataCenterId", "size": "size", "name": "storageName", "mountImageId": "mountImageId"})
-			errors = {"BAD_REQUEST": "Invalid characters in Virtual Storage name", "OVER_LIMIT_SETTING": "Storage size exceeds limit", "UNAUTHORIZED": "User is not authorized to access the Virtual Storage"}
-			return self.call("createStorage", [args], errors)
+			return self.call("createStorage", [args])
 		
 		def getStorage(self, id):
-			errors = {"RESOURCE_DELETED": "The Virtual Storage has been deleted by the user", "RESOURCE_NOT_FOUND": "Specified Virtual Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Storage"}
-			return self.call("getStorage", [id], errors)
+			return self.call("getStorage", [id])
 		
 		def connectStorageToServer(self, userArgs):
 			args = self.parseArgs(userArgs, {"stoid": "storageId", "srvid": "serverId", "bus": "busType", "devnum": "deviceNumber"})
 			args["busType"] = args["busType"].upper()
-			errors = {"RESOURCE_NOT_FOUND": "Specified Virtual Server or Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server or Storage", "BAD_REQUEST": "Specified Virtual Server and Storage are not in the same Data Center"}
-			return self.call("connectStorageToServer", [args], errors)
+			return self.call("connectStorageToServer", [args])
 		
 		def disconnectStorageFromServer(self, stoId, srvId):
-			errors = {"PROVISIONING_NO_CHANGES": "Storage is not connected to specified server", "RESOURCE_NOT_FOUND": "Specified Virtual Server or Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server or Storage"}
-			return self.call("disconnectStorageFromServer", [stoId, srvId], errors)
+			return self.call("disconnectStorageFromServer", [stoId, srvId])
 		
 		def updateStorage(self, userArgs):
 			args = self.parseArgs(userArgs, {"stoid": "storageId", "name": "storageName", "size": "size", "mountImageId": "mountImageId"})
-			errors = {"OVER_LIMIT_SETTING": "Storage size exceeds limit", "RESOURCE_NOT_FOUND": "Storage or Image does not exist", "BAD_REQUEST": "Invalid characters in Virtual Storage name / invalid storage size (must be > 1 GiB)", "UNAUTHORIZED": "User is not authorized to access the storage"}
-			return self.call("updateStorage", [args], errors)
+			return self.call("updateStorage", [args])
 		
 		def deleteStorage(self, id):
-			errors = {"RESOURCE_NOT_FOUND": "Specified Virtual Storage does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Storage"}
-			return self.call("deleteStorage", [id], errors)
+			return self.call("deleteStorage", [id])
 		
 		def addRomDriveToServer(self, userArgs):
 			args = self.parseArgs(userArgs, {"imgid": "imageId", "srvid": "serverId", "devnum": "deviceNumber"})
-			errors = {"RESOURCE_NOT_FOUND": "Specified Virtual Server or image does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server", "BAD_REQUEST": "Wrong image type (not a CD/DVD ISO image)"}
-			return self.call("addRomDriveToServer", [args], errors)
+			return self.call("addRomDriveToServer", [args])
 		
-		def removeRomDriveFromServer(self, imgid, srvid):
-			errors = {"RESOURCE_NOT_FOUND": "Specified Virtual Server or image does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server"}
-			return self.call("addRomDriveToServer", [imgid, srvid], errors)
+		def removeRomDriveFromServer(self, id, srvid):
+			return self.call("addRomDriveToServer", [id, srvid])
+		
+		def setImageOsType(self, imgid, ostype):
+			return self.call("setImageOsType", [imgid, ostype])
+		
+		def getImage(self, id):
+			return self.call("getImage", [id])
+		
+		def getAllImages(self):
+			return self.call("getAllImages", [])
+		
+		def deleteImage(self, id):
+			return self.call("deleteImage", [id])
 		
 		def createNIC(self, userArgs):
 			args = self.parseArgs(userArgs, {"srvid": "serverId", "lanid": "lanId", "name": "nicName", "ip": "ip"})
 			return self.call("createNic", [args], {}) # TODO: Must get error messages from documentation
 		
 		def getNIC(self, id):
-			errors = {"RESOURCE_NOT_FOUND": "Specified NIC does not exist", "RESOURCE_DELETED": "Specified NIC has been deleted by the user", "UNAUTHORIZED": "User is not authorized to access the Virtual Server / public IP"}
-			return self.call("getNic", [id], errors)
+			return self.call("getNic", [id])
 		
 		def setInternetAccess(self, dcid, lanid, internetAccess):
-			errors = {"RESOURCE_NOT_FOUND": "Specified NIC/server does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server / Data Center"}
-			return self.call("setInternetAccess", [dcid, lanid, internetAccess], errors)
+			return self.call("setInternetAccess", [dcid, lanid, internetAccess])
 		
 		def updateNIC(self, userArgs):
 			args = self.parseArgs(userArgs, {"nicid": "nicId", "lanid": "lanID", "ip": "ip", "name": "nicName"})
-			errors = {"BAD_REQUEST": "Invalid private IP address", "RESOURCE_NOT_FOUND": "Specified NIC/server does not exist", "UNAUTHORIZED": "User is not authorized to access the NIC or user is not owner of specified private IP"}
-			return self.call("updateNic", [args], errors)
+			return self.call("updateNic", [args])
 		
 		def deleteNIC(self, id):
-			errors = {"RESOURCE_NOT_FOUND": "Specified NIC does not exist", "UNAUTHORIZED": "User is not authorized to access the NIC"}
-			return self.call("deleteNic", [id], errors)
+			return self.call("deleteNic", [id])
 		
 		def reservePublicIPBlock(self, size):
-			errors = {"SERVER_EXCEEDED_CAPACITY": "No free IP address blocks are currently available for reservation"}
-			return self.call("reservePublicIpBlock", [size], errors)
+			return self.call("reservePublicIpBlock", [size])
 		
 		def addPublicIPToNIC(self, ip, nicId):
-			errors = {"RESOURCE_NOT_FOUND": "Specified IP/NIC does not exist", "UNAUTHORIZED": "User is not authorized to access the Virtual Server / NIC / reserved IP"}
-			return self.call("addPublicIpToNic", [ip, nicId], errors)
+			return self.call("addPublicIpToNic", [ip, nicId])
 		
 		def getAllPublicIPBlocks(self):
-			result = self.call("getAllPublicIpBlocks", [], {})
+			result = self.call("getAllPublicIpBlocks", [])
 			return result
 		
 		def removePublicIPFromNIC(self, ip, nicId):
-			errors = {"RESOURCE_NOT_FOUND": "Specified IP/NIC does not exist", "UNAUTHORIZED": "User is not authorized to access the NIC / reserved IP"}
-			return self.call("removePublicIpFromNic", [ip, nicId], errors)
+			return self.call("removePublicIpFromNic", [ip, nicId])
 		
 		def releasePublicIPBlock(self, id):
-			errors = {"BAD_REQUEST": "One or more IPs of the IP block are still in use by a NIC", "RESOURCE_NOT_FOUND": "Specified IP block does not exist", "UNAUTHORIZED": "User is not the owner of the public IP block"}
-			return self.call("releasePublicIpBlock", [id], errors)
+			return self.call("releasePublicIpBlock", [id])
 	
 	class Formatter:
 		
@@ -257,6 +247,8 @@ class ProfitBricks:
 		printUpdateStorage = operationCompleted
 		printAddRomDriveToServer = operationCompleted
 		printRemoveRomDriveFromServer = operationCompleted
+		printSetImageOsType = operationCompleted
+		printDeleteImage = operationCompleted
 		printCreateNIC = operationCompleted
 		printEnableInternetAccess = operationCompleted
 		printDisableInternetAccess = operationCompleted
@@ -356,6 +348,14 @@ class ProfitBricks:
 					self.out("No image")
 				self.indent(-1)
 		
+		def _printImage(self, image):
+			if self.short:
+				self.out("Image %s (%s)", image["imageName"], image["imageId"])
+			else:
+				self.out()
+				self.out("Name: %s", image["imageName"])
+				self.out("Image ID: %s", image["imageId"])
+		
 		def printImage(self, image):
 			if self.short:
 				self.out("Image %s (%s)", image["imageName"], image["imageId"])
@@ -363,6 +363,16 @@ class ProfitBricks:
 				self.out()
 				self.out("Name: %s", image["imageName"])
 				self.out("Image ID: %s", image["imageId"])
+				self.out("Type: %s", image["imageType"])
+				self.out("Writable: %s", "y" if image["writeable"] else "n")
+				self.out("CPU hot plugging: %s", "y" if image["cpuHotpluggable"] else "n")
+				self.out("Memory hot plugging: %s", "y" if image["memoryHotpluggable"] else "n")
+				self.out("Server IDs: %s", (" ; ".join(image["serverIds"])) if "serverIds" in image else "(none)")
+				self.out("OS Type: %s", image["osType"])
+		
+		def printAllImages(self, imageList):
+			for i in imageList:
+				self.printImage(i)
 		
 		def printDataCenter(self, dataCenter):
 			dc = self.requireArgs(dataCenter, ["dataCenterName", "provisioningState", "dataCenterVersion"])
@@ -578,6 +588,18 @@ operations = {
 		"args": ["imgid", "ostype"],
 		"lambda": lambda: formatter.printSetImageOsType(api.setImageOsType(opArgs["imgid"], opArgs["ostype"]))
 	},
+	"getImage": {
+		"args": ["imgid"],
+		"lambda": lambda: formatter.printImage(api.getImage(opArgs["imgid"]))
+	},
+	"getAllImages": {
+		"args": [],
+		"lambda": lambda: formatter.printAllImages(api.getAllImages())
+	},
+	"deleteImage": {
+		"args": ["imgid"],
+		"lambda": lambda: formatter.printDeleteImage(api.deleteImage(opArgs["imgid"]))
+	},
 	"createNIC": {
 		"args": ["srvid", "lanid"],
 		"lambda": lambda: formatter.printCreateNIC(api.createNIC(opArgs))
@@ -682,8 +704,4 @@ if opFound[0] != "@": # @ operations don't require authentication
 ## Perform operation
 
 operations[opFound]["lambda"]()
-
-
-if not baseArgs["s"]:
-	print
 
