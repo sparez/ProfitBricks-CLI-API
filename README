@@ -1,0 +1,51 @@
+Copyright 2012 ProfitBricks GmbH
+
+= ProfitBricks API Command-Line Interface =
+===========================================
+
+If you already installed a previous version, you don't need to do any of this
+
+Installation instructions for Debian; replace apt-get with yum where appropriate
+
+1. PREREQUISITES
+================
+
+Install python:
+	sudo apt-get install python
+
+Install python setup tools:
+	sudo apt-get install python-setuptools
+
+Download the latest stable version of suds:
+	wget https://fedorahosted.org/releases/s/u/suds/python-suds-0.4.tar.gz
+	tar zxvf python-suds-0.4.tar.gz
+
+Install suds:
+	cd python-suds-0.4
+	sudo python setup.py install
+
+2. AUTHENTICATION SETUP
+=======================
+
+To avoid having to type your username and password or link to the authentication
+file every time you log in, you create a file with the name default.auth and put
+it in the working directory of pbapi.py; write your ProfitBricks username on the
+first line and your password on the second line. This is not required, but it is
+recommended unless there is a risk of someone else reading the file and exposing
+your password.
+
+3. QUICK INTRO
+==============
+
+Use the pbcli.sh application for a better interface. Type 'help' to get help (it
+will load the pbapi.1 man page) or list to get a list of available commands. The
+pbcli interface supports tab completion, but it currently does not have history.
+Use 'last' to execute your last command. This is useful in case the hardware was
+in provisioning state which failed the command and you want to run it again.
+
+4. SUPPORT
+==========
+
+Report bugs to bugs at profitbricks dot com
+Request support using support at profitbricks dot com
+
