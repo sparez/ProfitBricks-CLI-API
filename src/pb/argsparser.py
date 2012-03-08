@@ -167,6 +167,14 @@ class ArgsParser:
 				"args": ["bid"],
 				"lambda": lambda formatter, api, opArgs: formatter.printLoadBalancer(api.getLoadBalancer(opArgs["bid"]))
 			},
+			"registerServersOnLoadBalancer": {
+				"argS": ["srvid", "bid"],
+				"lambda": lambda formatter, api, opArgs: formatter.printRegisterServersOnLoadBalancer(api.registerServersOnLoadBalancer(opArgs["srvid"], opArgs["bid"]))
+			},
+			"deleteLoadBalancer": {
+				"args": ["bid"],
+				"lambda": lambda formatter, api, opArgs: formatter.printDeleteLoadBalancer(api.deleteLoadBalancer(opArgs["bid"]))
+			},
 			"addRomDriveToServer": {
 				"args": ["imgid", "srvid"],
 				"lambda": lambda formatter, api, opArgs: formatter.printAddRomDriveToServer(api.addRomDriveToServer(opArgs))

@@ -128,12 +128,22 @@ class API:
 		return self.call("deleteStorage", [id])
 	
 	def createLoadBalancer(self, userArgs):
-		args = self.parseArgs(userArgs, {"dcid": "dataCenterId", "name": "loadBalancerName", "algo": "loadBalancerAlgorithm", "ip": "ip", "lanid": "lanId", "serverIds": "serverIds"})
+		args = self.parseArgs(userArgs, {"dcid": "dataCenterId", "name": "loadBalancerName", "ip": "ip", "lanid": "lanId"})
+		if "algo" in userArgs:
+			args["loadBalancerAlgorithm"] = userArgs["algo"].upper()
+		if "srvid" in userArgs:
+			args["serverIds"] = ",".split(userArgs["srvid"])
 		result = self.call("createLoadBalancer", [args])
 		return result.loadBalancerId
 	
 	def getLoadBalancer(self, id):
 		return self.call("getLoadBalancer", [id])
+	
+	def registerServersOnLoadBalancer(self, srvids, bid):
+		return self.call("registerServersOnLoadBalancer", [",".split(srvids), bid])
+	
+	def deleteLoadBalancer(self, id):
+		return self.call("deleteLoadBalancer", [id])
 	
 	def addRomDriveToServer(self, userArgs):
 		args = self.parseArgs(userArgs, {"imgid": "imageId", "srvid": "serverId", "devnum": "deviceNumber"})

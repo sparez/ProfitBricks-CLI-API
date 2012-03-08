@@ -24,7 +24,15 @@ Install suds:
 	cd python-suds-0.4
 	sudo python setup.py install
 
-2. AUTHENTICATION SETUP
+2. PREREQUISITES FOR WINDOWS
+============================
+
+First step, install setuptools from here: http://pypi.python.org/pypi/setuptools
+Then open a cmd window and run C:\Python27\scripts\easy_install suds (replace 27
+with whatever version of python you have installed; this was tested to work with
+python 2.7 on Windows 7 x64)
+
+3. AUTHENTICATION SETUP
 =======================
 
 To avoid having to type your username and password or link to the authentication
@@ -34,7 +42,7 @@ first line and your password on the second line. This is not required, but it is
 recommended unless there is a risk of someone else reading the file and exposing
 your password.
 
-3. QUICK INTRO
+4. QUICK INTRO
 ==============
 
 Use the pbcli.sh application for a better interface. Type 'help' to get help (it
@@ -43,7 +51,7 @@ pbcli interface supports tab completion, but it currently does not have history.
 Use 'last' to execute your last command. This is useful in case the hardware was
 in provisioning state which failed the command and you want to run it again.
 
-4. SUPPORT
+5. SUPPORT
 ==========
 
 Report bugs to bugs at profitbricks dot com

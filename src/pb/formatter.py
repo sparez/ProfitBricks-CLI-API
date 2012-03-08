@@ -54,6 +54,7 @@ class Formatter:
 	printAddPublicIPToNIC = operationCompleted
 	printRemovePublicIPFromNIC = operationCompleted
 	printReleasePublicIPBlock = operationCompleted
+	printDeleteLoadBalancer = operationCompleted
 	
 	def printCreateDataCenter(self, response):
 		self.out("Data center ID: %s", response["dataCenterId"])
@@ -149,7 +150,6 @@ class Formatter:
 		self.out("Load balancer ID: %s", id)
 	
 	def printLoadBalancer(self, loadBalancer):
-		print loadBalancer
 		self.out("Load balancer ID: %s", loadBalancer["loadBalancerId"])
 		self.out("Name: %s", loadBalancer["loadBalancerName"])
 		self.out("Algorithm: %s", loadBalancer["loadBalancerAlgorithm"])
@@ -173,6 +173,26 @@ class Formatter:
 		self.out("Creation time [%s] modification time [%s]", loadBalancer["creationTime"], loadBalancer["lastModificationTime"])
 		self.out("Provisioning state: %s", loadBalancer["provisioningState"])
 	
+	def printBalancedServer(self, srv):
+		# it may be "active" instead of "activate", but the documentation specifies it is "activate"
+		if self.short:
+			self.out("%s on server %s (%s) NIC %s", "Active" if srv["activate"] else "Inactive", srv["serverName"], srv["serverId"], srv["balancedNicId"])
+		else:
+			self.out()
+			self.out("Server ID: %s", srv["serverId"])
+			self.out("Server name: %s", srv["serverName"])
+			self.out("NIC ID: %s", srv["balancedNicId"])
+			self.out("Active: %s", "yes" if srv["activate"] else "no")
+	
+	def printRegisterServersOnLoadBalancer(self, response):
+		self.out("Load balancer ID: %s", response["loadBalancerId"])
+		self.out("LAN ID: %s", response["lanId"])
+		if "balancedServers" in response:
+			for srv in response["balancedServers"]:
+				self.printBalancedServer(srv)
+		else:
+			sel.out("ERROR")
+	
 	def _printImage(self, image): # need to test whether to use this or other method
 		if self.short:
 			self.out("Image %s (%s)", image["imageName"], image["imageId"])
@@ -189,9 +209,9 @@ class Formatter:
 			self.out("Name: %s", image["imageName"])
 			self.out("Image ID: %s", image["imageId"])
 			self.out("Type: %s", image["imageType"])
-			self.out("Writable: %s", "y" if image["writeable"] else "n")
-			self.out("CPU hot plugging: %s", "y" if image["cpuHotpluggable"] else "n")
-			self.out("Memory hot plugging: %s", "y" if image["memoryHotpluggable"] else "n")
+			self.out("Writable: %s", "yes" if image["writeable"] else "nno")
+			self.out("CPU hot plugging: %s", "yes" if image["cpuHotpluggable"] else "no")
+			self.out("Memory hot plugging: %s", "yes" if image["memoryHotpluggable"] else "no")
 			self.out("Server IDs: %s", (" ; ".join(image["serverIds"])) if "serverIds" in image else "(none)")
 			self.out("Operating system: %s", image["osType"])
 	
