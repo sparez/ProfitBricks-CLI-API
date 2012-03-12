@@ -55,6 +55,7 @@ class Formatter:
 	printRemovePublicIPFromNIC = operationCompleted
 	printReleasePublicIPBlock = operationCompleted
 	printDeleteLoadBalancer = operationCompleted
+	printDeregisterServersOnLoadBalancer = operationCompleted
 	
 	def printCreateDataCenter(self, response):
 		self.out("Data center ID: %s", response["dataCenterId"])

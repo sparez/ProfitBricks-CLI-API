@@ -142,6 +142,9 @@ class API:
 	def registerServersOnLoadBalancer(self, srvids, bid):
 		return self.call("registerServersOnLoadBalancer", [",".split(srvids), bid])
 	
+	def deregisterServersOnLoadBalancer(self, srvids, bid):
+		return self.call("deregisterServersOnLoadBalancer", [",".split(srvids), bid])
+	
 	def deleteLoadBalancer(self, id):
 		return self.call("deleteLoadBalancer", [id])
 	
