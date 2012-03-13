@@ -431,6 +431,46 @@ Deletes an existing NIC.
 Identifier of the target NIC.
 .El
 .El
+.\" PUBLIC IP OPERATIONS AND ARGUMENTS
+.Sh PUBLIC IP OPERATIONS AND ARGUMENTS
+.Nm
+.Fl u Ar username Fl p Ar password Ar operation Op ...
+.Pp
+The
+.Ar operation
+may be:
+.Bl -tag -width Ds
+.It Ar reservePublicIpBlock
+Reserves a specified amount of public IPs which can be manually assigned to a NIC by the user.
+.Bl -tag -width Ds
+.It Fl size Ar blockSize
+Block size / amount of IPs to reserve.
+.El
+.It Ar addPublicIpToNic
+Adds an existing reserved public IP to a NIC. This operation is required when dealing with reserved public IPs to ensure proper routing by the ProfitBricks cloud networking layer.
+.Bl -tag -width Ds
+.It Fl ip Ar IP
+Reserved IP.
+.It Fl nicid Ar nicId
+Identifier of the target NIC.
+.El
+.It Ar getAllPublicIpBlocks
+Returns a list of all public IP blocks reserved by the user, including the reserved IPs and connected NICs.
+.It Ar removePublicIpFromNic
+Removes a reserved public IP from a NIC. This operation is required when dealing with reserved public IPs to ensure proper routing by the ProfitBricks cloud networking layer.
+.Bl -tag -width Ds
+.It Fl ip Ar IP
+Reserved IP.
+.It Fl nicid Ar nicId
+Identifier of the target NIC.
+.El
+.It Ar releasePublicIpBlock
+Releases an existing block of reserved public IPs. Before releasing an IP block, ensure that no IP address in the respective IP block is assigned to a NIC anymore. Otherwise, the operation will fail.
+.Bl -tag -width Ds
+.It Fl blockid Ar blockId
+Identifier of the target reserved IP block.
+.El
+.El
 .\" EXIT STATUS
 .Sh EXIT STATUS
 .Ex -std
