@@ -60,7 +60,20 @@ as password will prompt the user for the password from the stdin.
 .It Fl auth Ar authfile
 The
 .Ar authfile
-must contain the authentication username on the first line and password on the second line. For security reasons, the file must only be readable by your user.
+must contain the authentication username on the first line and password on the second line. For security reasons, the file must only be readable by the current user.
+If no authentication is given as arguments to
+.Nm
+(not even the
+.Fl auth
+), the
+.Nm
+looks for a file named
+.Ar default.auth
+in the current directory. If such a file is found, it is considered to be the
+.Ar authfile .
+This is so the user doesn't have to keep providing authentication every time
+.Nm
+is used.
 .It Fl s
 Enable short output formatting (display less information).
 .El
@@ -296,10 +309,17 @@ Assigns or reassigns an image to the storage.
 .It Ar deleteStorage
 Deletes an existing virtual storage device.
 .El
-.\" CD/DVD-ROM DRIVE
+.\" CD/DVD-ROM DRIVE OPERATIONS AND ARGUMENTS
 .Sh CD/DVD-ROM DRIVE OPERATIONS AND ARGUMENTS
 .Nm
-.Fl u Ar username Fl p Ar password Ar operation Fl imgid Ar imageId Op ...
+.Fl u Ar username Fl p Ar password Ar operation Fl imgid Ar imageId Fl srvid Ar serverId Op ...
+.Pp
+.Bl -tag -width Ds
+.It Fl imageid Ar imageId
+Identifier of the CD/DVD-ROM image.
+.It Fl srvid Ar serverId
+Identifier of the target virtual server.
+.El
 .Pp
 The
 .Ar operation
@@ -308,16 +328,107 @@ may be:
 .It Ar addRomDriveToServer
 Adds a CD/DVD-ROM drive to an existing virtual server. Maximum CD/DVD-ROM drives are currently 2 (API v1.1).
 .Bl -tag -width Ds
-.It Fl srvid Ar serverId
-Idendifier of the target virtual server.
 .It Op Fl devnum Ar deviceNumber
 Device number of the CD/DVD-ROM drive connected to the server. If no device number is set, a new device number will be assigned to the CD/DVD-ROM drive automatically.
 .El
 .It Ar removeDriveFromServer
 Removes a CD/DVD-ROM drive from an existing virtual server.
+.El
+.\" IMAGE OPERATIONS AND ARGUMENTS
+.Sh IMAGE OPERATIONS AND ARGUMENTS
+.Nm
+.Fl u Ar username Fl p Ar password Ar operation Op ...
+.Pp
+The
+.Ar operation
+may be:
+.Bl -tag -width Ds
+.It Ar setImageOsType
+Sets the operating system type of an individual HDD or CD/DVD-ROM image that has been uploaded on the ProfitBricks FTP server.
+The default operating system type is UNKNOWN. Due to Microsoft's terms and conditions, the user has to set the operating system type of an uploaded Windows image to WINDOWS and
+therewith agrees with them as well as with the pricing.
+Any server that is booted from the image will inherit the operating system type of the image automatically.
+.Bl -tag -width Ds
+.It Fl imgid Ar imageId
+Identifier of the target HDD or CD/DVD-ROM image.
+.It Op Fl ostype Ar osType
+Operating system type of the target image (WINDOWS, OTHER).
+.El
+.It Ar getImage
+Returns information about the HDD or CD/DVD-ROM (ISO) image.
+.Bl -tag -width Ds
+.It Fl imgid Ar imageId
+Identifier of the target image.
+.El
+.It Ar getAllImages
+Outputs a list of HDD and/or CD/DVD-ROM images existing on or uploaded to the ProfitBricks FTP server.
+.It Ar deleteImage
+Deletes an existing HDD or CD/DVD-ROM (ISO) image.
+.Bl -tag -width Ds
+.It Fl imgid Ar imageId
+Identifier of the target CD/DVD-ROM image.
+.El
+.El
+.\" NIC OPERATIONS AND ARGUMENTS
+.Sh NIC OPERATIONS AND ARGUMENTS
+.Nm
+.Fl u Ar username Fl p Ar password Ar operation Op ...
+.Pp
+The
+.Ar operation
+may be:
+.Bl -tag -width Ds
+.It Ar createNic
+Creates a NIC on an existing virtual server.
 .Bl -tag -width Ds
 .It Fl srvid Ar serverId
-Idendifier of the target virtual server.
+Identifier of the target virtual server.
+.It Fl lanid Ar lanId
+Identifier of the target LAN > 0 that is to be connected to the specified virtual server.
+If no LAN exists for such ID, a new LAN with the given ID will be created.
+.It Op Fl ip Ar IP
+Public/private IP address.
+.It Op Fl name Ar nicName
+Name of the new NIC.
+.El
+.It Ar getNic
+Returns information about the state and configuration of an existing NIC.
+.Bl -tag -width Ds
+.It Fl nicid Ar nicId
+Identifier of the target NIC.
+.El
+.It Ar enableInternetAccess
+Connects an existing NIC to a public LAN to get Internet access.
+.Bl -tag -width Ds
+.It Fl dcid Ar dataCenterId
+Identifier of the target data center.
+.It Fl lanid Ar lanId
+Identifier of the target LAN.
+.El
+.It Ar disableInternetAccess
+Removes Internet access from an existing NIC. The arguments are identical to the arguments of
+.Ar enableInternetAccess .
+.It Ar updateNic
+Changes the settings of an existing NIC.
+.Bl -tag -width Ds
+.It Fl nicid Ar nicId
+Identifier of the target NIC.
+.It Fl lanid Ar lanId
+Identifier of the target LAN connected to the NIC. If no LAN exists for such an ID, a new LAN with the given ID will be created. To disconnect a NIC from a LAN, set
+.Ar lanId
+to 0.
+.It Op Fl ip Ar IP
+Public/private IP address. Set
+.Fl ip
+value to
+.Ar reset
+to reset the IP address.
+.El
+.It Ar deleteNic
+Deletes an existing NIC.
+.Bl -tag -width Ds
+.It Fl nicid Ar nicId
+Identifier of the target NIC.
 .El
 .El
 .\" EXIT STATUS
