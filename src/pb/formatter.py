@@ -30,7 +30,7 @@ class Formatter:
 	
 	# Generic method, for many operations that don't give any response (except through HTTP, which is handled by ProfitBricks.API)
 	def operationCompleted(self, response):
-		self.out("Operation completed")
+		self.out("Operation completed") # if you change this, remember to change it in test/test-pbapi.sh
 	
 	printClearDataCenter = operationCompleted
 	printUpdateDataCenter = operationCompleted
@@ -56,6 +56,8 @@ class Formatter:
 	printReleasePublicIPBlock = operationCompleted
 	printDeleteLoadBalancer = operationCompleted
 	printDeregisterServersOnLoadBalancer = operationCompleted
+	printActivateLoadBalancingOnServers = operationCompleted
+	printDeactivateLoadBalancingOnServers = operationCompleted
 	
 	def printCreateDataCenter(self, response):
 		self.out("Data center ID: %s", response["dataCenterId"])
@@ -127,7 +129,7 @@ class Formatter:
 			self.out("Size: %s GiB", st["size"])
 			self.out("Connected to VM ID: %s", (" ; ".join(storage.serverIds)) if "serverIds" in storage else "(none)")
 			if "mountImage" in storage:
-				self.printImage(storage.mountImage)
+				self._printImage(storage.mountImage)
 			else:
 				self.out("(none)")
 			self.indent(-1)
@@ -142,7 +144,7 @@ class Formatter:
 			self.out("Mount image:")
 			self.indent(1)
 			if "mountImage" in storage:
-				self.printImage(storage.mountImage)
+				self._printImage(storage.mountImage)
 			else:
 				self.out("No image")
 			self.indent(-1)

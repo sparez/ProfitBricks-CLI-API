@@ -6,4 +6,3 @@ class ArgsError:
 		print "Invalid arguments" + ("" if message is None else ": " + message)
 		sys.exit(1)
 
-

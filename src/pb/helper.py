@@ -12,7 +12,12 @@ class Helper:
 		print "Available operations and mandatory arguments:"
 		for op in sorted(operations):
 			print ":",\
-				Helper.camelCaseToDash(re.sub('@', '', op)),\
+				Helper.camelCaseToDash(re.sub("@", "", op)),\
 				("(-" + " -".join(operations[op]["args"]) + ")") if len(operations[op]["args"]) > 0 else "",\
 				"(internal)" if re.search("@", op) else ""
+	
+	@staticmethod
+	def printOperationsSimple(operations):
+		for op in sorted(operations):
+			print Helper.camelCaseToDash(re.sub("@", "", op))
 

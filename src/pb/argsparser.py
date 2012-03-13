@@ -169,15 +169,19 @@ class ArgsParser:
 			},
 			"registerServersOnLoadBalancer": {
 				"args": ["srvid", "bid"],
-				"lambda": lambda formatter, api, opArgs: formatter.printRegisterServersOnLoadBalancer(api.registerServersOnLoadBalancer(opArgs["srvid"], opArgs["bid"]))
+				"lambda": lambda formatter, api, opArgs: formatter.printRegisterServersOnLoadBalancer(api.registerServersOnLoadBalancer(",".split(opArgs["srvid"]), opArgs["bid"]))
 			},
 			"deregisterServersOnLoadBalancer": {
 				"args": ["srvid", "bid"],
-				"lambda": lambda formatter, api, opArgs: formatter.printDeregisterServersOnLoadBalancer(api.deregisterServersOnLoadBalancer(opArgs["srvid"], opArgs["bid"]))
+				"lambda": lambda formatter, api, opArgs: formatter.printDeregisterServersOnLoadBalancer(api.deregisterServersOnLoadBalancer(",".split(opArgs["srvid"]), opArgs["bid"]))
 			},
 			"activateLoadBalancingOnServer": {
 				"args": ["srvid", "bid"],
-				"lambda": lambda formatter, api, opArgs: formatter.printActivateLoadBalancingOnServers(api.activateLoadBalancingOnServer(opArgs["srvid"], opArgs["bid"]))
+				"lambda": lambda formatter, api, opArgs: formatter.printActivateLoadBalancingOnServers(api.activateLoadBalancingOnServer(",".split(opArgs["srvid"]), opArgs["bid"]))
+			},
+			"deactivateLoadBalancingOnServer": {
+				"args": ["srvid", "bid"],
+				"lambda": lambda formatter, api, opArgs: formatter.printDeactivateLoadBalancingOnServers(api.deactivateLoadBalancingOnServer(",".split(opArgs["srvid"]), opArgs["bid"]))
 			},
 			"deleteLoadBalancer": {
 				"args": ["bid"],
@@ -254,6 +258,10 @@ class ArgsParser:
 			"@list": {
 				"args": [],
 				"lambda": lambda helper: helper.printOperations(ArgsParser.operations)
+			},
+			"@list-simple": {
+				"args": [],
+				"lambda": lambda helper: helper.printOperationsSimple(ArgsParser.operations)
 			}
 		}
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version="1.1"
-help="ProfitBricks API CLI Copyright 2012 ProfitBricks GmbH, licensed under Apache 2.0 ( http://www.apache.org/licenses/LICENSE-2.0 )\nType 'exit' to leave, 'help' for help, 'list' to list available operations or 'last' to repeat your last command."
+help="ProfitBricks API CLI v${version} Copyright 2012 ProfitBricks GmbH, licensed under Apache 2.0 ( http://www.apache.org/licenses/LICENSE-2.0 )\nType 'exit' to leave, 'help' for help, 'list' to list available operations or 'last' to repeat your last command."
 
 echo -e "\n$help"
 
@@ -20,7 +20,7 @@ fi
 echo ""
 
 # Enable autocomplete
-ops=`./pbapi.py list`
+ops=`./pbapi.py list-simple`
 set -o emacs
 bind 'set show-all-if-ambiguous on'
 bind 'set completion-ignore-case on'

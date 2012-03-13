@@ -7,22 +7,11 @@ If you already installed a previous version, you don't need to do any of this
 
 Installation instructions for Debian; replace apt-get with yum where appropriate
 
-1. PREREQUISITES
-================
+1. PREREQUISITES FOR LINUX
+==========================
 
-Install python:
-	sudo apt-get install python
-
-Install python setup tools:
-	sudo apt-get install python-setuptools
-
-Download the latest stable version of suds:
-	wget https://fedorahosted.org/releases/s/u/suds/python-suds-0.4.tar.gz
-	tar zxvf python-suds-0.4.tar.gz
-
-Install suds:
-	cd python-suds-0.4
-	sudo python setup.py install
+sudo apt-get install python python-setuptools
+sudo easy_install suds
 
 2. PREREQUISITES FOR WINDOWS
 ============================
