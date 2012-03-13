@@ -77,6 +77,62 @@ Enable short output formatting (display less information).
 .It Load balancers: ...
 .It Firewalls: ...
 .El
+.\" DATACENTER OPERATIONS AND ARGUMENTS
+.Sh DATACENTER OPERATIONS AND ARGUMENTS
+.Nm
+.Fl u Ar username Fl p Ar password Ar operation Fl dcid Ar dataCenterId Op ...
+.Pp
+The
+.Ar operation
+may be:
+.Bl -tag -width Ds
+.It Ar createDataCenter
+In the case of
+.Ar createDataCenter
+there is no need for
+.Fl dcid .
+Outputs the ID of the newly created data center.
+.Bl -tag -width Ds
+.It Op Fl name Ar name
+The name of the newly created Data Center. Cannot contain \@, \\, /, |, ", or \'.
+.El
+.It Ar getDataCenter
+Returns information about the Data Center:
+.Bl -tag -width Ds
+.It data center name
+Name of the Virtual Data Center.
+.It state
+The current provisioning state (INACTIVE, INPROCESS, AVAILABLE, DELETED).
+.It servers
+A list of Virtual Servers contained by the Virtual Data Center.
+.It storages
+A list of Virtual Storages contained by the Virtual Data Center.
+.It version
+Version of the Virtual Data Center.
+.El
+.It Ar getDataCenterState
+Returns the data center provisioning state (INACTIVE, INPROCESS, AVAILABLE, DELETED).
+.It Ar getAllDataCenters
+Returns a list of all data centers created by the current user.
+.Bl -tag -width Ds
+.It id
+The unique identifier of the Virtual Data Center.
+.It name
+The name provided when the Virtual Data Center was created (or updated).
+.It version
+Version of the Virtual Data Center.
+.El
+.It Ar updateDataCenter
+Update the data center. The only argument that can be specified for now is the new name of the data center.
+.Bl -tag -width Ds
+.It Op Fl name Ar name
+The new name of the Data Center.
+.El
+.It Ar clearDataCenter
+Removes all components from an existing data center.
+.It Ar deleteDataCenter
+Deletes an empty Virtual Data Center. All components must be removed first.
+.El
 .\" VIRTUAL SERVER OPERATIONS AND ARGUMENTS
 .Sh VIRTUAL SERVER OPERATIONS AND ARGUMENTS
 .Nm
@@ -167,62 +223,6 @@ Updates the OS type of the server (WINDOWS, OTHER). If left empty, the server wi
 .El
 .It Ar deleteServer
 Deletes an existing virtual server.
-.El
-.\" DATACENTER OPERATIONS AND ARGUMENTS
-.Sh DATACENTER OPERATIONS AND ARGUMENTS
-.Nm
-.Fl u Ar username Fl p Ar password Ar operation Fl dcid Ar dataCenterId Op ...
-.Pp
-The
-.Ar operation
-may be:
-.Bl -tag -width Ds
-.It Ar createDataCenter
-In the case of
-.Ar createDataCenter
-there is no need for
-.Fl dcid .
-Outputs the ID of the newly created data center.
-.Bl -tag -width Ds
-.It Op Fl name Ar name
-The name of the newly created Data Center. Cannot contain \@, \\, /, |, ", or \'.
-.El
-.It Ar getDataCenter
-Returns information about the Data Center:
-.Bl -tag -width Ds
-.It data center name
-Name of the Virtual Data Center.
-.It state
-The current provisioning state (INACTIVE, INPROCESS, AVAILABLE, DELETED).
-.It servers
-A list of Virtual Servers contained by the Virtual Data Center.
-.It storages
-A list of Virtual Storages contained by the Virtual Data Center.
-.It version
-Version of the Virtual Data Center.
-.El
-.It Ar getDataCenterState
-Returns the data center provisioning state (INACTIVE, INPROCESS, AVAILABLE, DELETED).
-.It Ar getAllDataCenters
-Returns a list of all data centers created by the current user.
-.Bl -tag -width Ds
-.It id
-The unique identifier of the Virtual Data Center.
-.It name
-The name provided when the Virtual Data Center was created (or updated).
-.It version
-Version of the Virtual Data Center.
-.El
-.It Ar updateDataCenter
-Update the data center. The only argument that can be specified for now is the new name of the data center.
-.Bl -tag -width Ds
-.It Op Fl name Ar name
-The new name of the Data Center.
-.El
-.It Ar clearDataCenter
-Removes all components from an existing data center.
-.It Ar deleteDataCenter
-Deletes an empty Virtual Data Center. All components must be removed first.
 .El
 .\" VIRTUAL STORAGES OPERATIONS AND ARGUMENTS
 .Sh VIRTUAL STORAGES OPERATIONS AND ARGUMENTS
