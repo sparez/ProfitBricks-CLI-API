@@ -10,6 +10,7 @@ class ArgsParser:
 	def readUserArgs(self):
 		i = 1
 		# -u -p -auth -debug and -s are base arguments, everything else are operation arguments
+		# operation argument names are converted to lower-case and have dashes removed (eg, "create-datacenter -nA-Me hello" => baseArgs["op"]="create-datacenter", opArgs["name"]="hello")
 		while i < len(sys.argv):
 			arg = sys.argv[i]
 			if arg == "-" or arg == "":
@@ -51,7 +52,7 @@ class ArgsParser:
 				self.baseArgs["s"] = True
 			# if not base arg, then it is operation arg
 			else:
-				self.opArgs[arg[1:].lower()] = (sys.argv[i + 1] if i < len(sys.argv) - 1 else "")
+				self.opArgs[arg[1:].lower().replace("-", "")] = (sys.argv[i + 1] if i < len(sys.argv) - 1 else "")
 				i += 1
 			i += 1
 		

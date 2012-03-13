@@ -90,9 +90,11 @@ class API:
 		return self.call("deleteDataCenter", [id])
 	
 	def createServer(self, userArgs):
-		args = self.parseArgs(userArgs, {"cores": "cores", "ram": "ram", "bootFromStorageId": "bootFromStorageId", "bootFromImageId": "bootFromImageId", "osType": "osType", "lanId": "lanId", "dcid": "dataCenterId", "name": "serverName"})
-		if "internetAccess" in userArgs:
-			args["internetAccess"] = ((userArgs["internetAccess"].lower() + "x")[0] == "y")
+		args = self.parseArgs(userArgs, {"cores": "cores", "ram": "ram", "bootFromStorageId": "bootFromStorageId", "bootFromImageId": "bootFromImageId", "lanId": "lanId", "dcid": "dataCenterId", "name": "serverName"})
+		if "ostype" in userArgs:
+			args["osType"] = userArgs["ostype"].upper()
+		if "internetaccess" in userArgs:
+			args["internetAccess"] = (userArgs["internetaccess"][:1].lower() == "y")
 		return self.call("createServer", [args])
 	
 	def rebootServer(self, id):
