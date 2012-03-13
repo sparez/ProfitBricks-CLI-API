@@ -186,7 +186,9 @@ class API:
 		return self.call("setInternetAccess", [dcid, lanid, internetAccess])
 	
 	def updateNIC(self, userArgs):
-		args = self.parseArgs(userArgs, {"nicid": "nicId", "lanid": "lanID", "ip": "ip", "name": "nicName"})
+		args = self.parseArgs(userArgs, {"nicid": "nicId", "lanid": "lanID", "name": "nicName"})
+		if "ip" in userArgs:
+			args["ip"] = (userArgs["ip"] if userArgs["ip"].lower() != "reset" else "")
 		return self.call("updateNic", [args])
 	
 	def deleteNIC(self, id):
