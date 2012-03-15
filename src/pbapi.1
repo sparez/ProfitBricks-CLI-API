@@ -13,13 +13,13 @@
 .\" See the License for the specific language governing permissions and
 .\" limitations under the License.
 .\"
-.Dd Jan 30, 2012
+.Dd Mar 14, 2012
 .Dt PBAPI 1
-.Os \" Current operating system
+.Os \" Unix/Linux/Windows
 .\" NAME
-.Ss NAME
-.Nm pbapi \- ProfitBricks API tools
-.Nd Manipulates the ProfitBricks data centers and components.
+.Sh NAME
+.Nm pbapi
+.Nd ProfitBricks API tools v0.1
 .\" SYNOPSYS
 .Sh SYNOPSYS
 .Nm
@@ -87,8 +87,8 @@ Enable short output formatting (display less information).
 .It Images: setImageOsType getImage getAllImages deleteImage
 .It NICs: createNic getNic setInternetAccess updateNic deleteNic
 .It IPs: reservePubilcIpBlock addPublicIpToNic getAllPublicIpBlocks removePublicIpFromNic releasePublicIpBlock
-.It Load balancers: ...
-.It Firewalls: ...
+.It Load balancers: ... TO DO ...
+.It Firewalls: ... TO DO ...
 .El
 .\" DATACENTER OPERATIONS AND ARGUMENTS
 .Sh DATACENTER OPERATIONS AND ARGUMENTS
@@ -160,12 +160,12 @@ Creates a Virtual Server within an existing Data Center. Parameters can be speci
 .Fl srvid
 argument.
 .Bl -tag -width Ds
-.It Fl dcid Ar dataCenterId
+.It Op Fl dcid Ar dataCenterId
 The ID of the Data Center.
 .It Fl cores Ar nrCores
 Number of virtual CPU cores to be assigned to the server.
 .It Fl ram Ar ramUnits
-Number of Megabytes (MiB) to be assigned to the server. Minimum value is 256 (256 MiB).
+Number of Megabytes (MiB) to be assigned to the server. Minimum value is 256 (256 MiB) and must be a multiple of 256 (256, 512, 768, etc).
 .It Op Fl name Ar serverName
 Names the server to be created.
 .It Op Fl bootFromImageId Ar bootFromImageId
@@ -418,11 +418,9 @@ Identifier of the target LAN connected to the NIC. If no LAN exists for such an 
 .Ar lanId
 to 0.
 .It Op Fl ip Ar IP
-Public/private IP address. Set
+Public/private IP address. If you ommit the
 .Fl ip
-value to
-.Ar reset
-to reset the IP address.
+flag, the IP address will be reset!
 .El
 .It Ar deleteNic
 Deletes an existing NIC.
@@ -480,9 +478,6 @@ Identifier of the target reserved IP block.
 .\" TO DO
 .Sh TO DO
 .Bl -tag -width Ds
-.It Images
-.It NICs
-.It IPs
 .It Load balancers
 .It Firewalls
 .El
