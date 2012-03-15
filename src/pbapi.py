@@ -34,8 +34,9 @@ argsParser.readUserArgs()
 
 requestedOp = argsParser.getRequestedOperation()
 if requestedOp is None:
-	print sys.argv
-	print "Unknown operation:", argsParser.baseArgs["op"]
+	if argsParser.baseArgs["debug"]:
+		print sys.argv
+	print "Error: Unknown operation:", argsParser.baseArgs["op"]
 	sys.exit(2)
 
 # @ operations don't require pb api nor authentication
