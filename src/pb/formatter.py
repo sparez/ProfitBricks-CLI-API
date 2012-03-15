@@ -74,31 +74,37 @@ class Formatter:
 	def printAllDataCenters(self, dataCenters):
 		if not self.short:
 			self.out()
-		self.out("%s %s %s", "Name".ljust(40), "Data Center ID".ljust(40), "Version".ljust(9))
-		self.out("%s %s %s", "-" * 40, "-" * 40, "-" * 9)
+		self.out("%s %s %s", "Name".ljust(38), "Data Center ID".ljust(36), "Ver".ljust(4))
+		self.out("%s %s %s", "-" * 38, "-" * 36, "-" * 4)
 		for dataCenter in dataCenters:
 			dc = self.requireArgs(dataCenter, ["dataCenterName", "dataCenterId", "dataCenterVersion"]);
-			self.out("%s %s %s", dc["dataCenterName"].ljust(40), dc["dataCenterId"].ljust(40), dc["dataCenterVersion"].ljust(9))
+			self.out("%s %s %s", dc["dataCenterName"].ljust(38), dc["dataCenterId"].ljust(36), dc["dataCenterVersion"].ljust(4))
 	
 	def printNIC(self, apiNIC):
-		nic = self.requireArgs(apiNIC, ["nicName", "nicId", "lanId", "internetAccess", "macAddress"])
+		nic = self.requireArgs(apiNIC, ["nicName", "nicId", "lanId", "macAddress", "serverId"])
 		if self.short:
-			self.out("%s (%s) => %s", nic["nicName"], "inet" if nic["internetAccess"].upper() == "TRUE" else "priv", " ; ".join(apiNIC.ips))
+			self.out("NIC %s (%s mac %s on server %s) => %s",\
+				nic["nicName"],\
+				"inet" if apiNIC["internetAccess"] else "priv",\
+				nic["macAddress"],\
+				nic["serverId"],\
+				" ; ".join(apiNIC["ips"]) if "ips" in apiNIC else "(no IPs)")
 		else:
 			self.out()
 			self.out("Name: %s", nic["nicName"])
 			self.out("NIC ID: %s", nic["nicId"])
 			self.out("LAN ID: %s", nic["lanId"])
-			self.out("Internet access: %s", "yes" if nic["internetAccess"] == "TRUE" else "no")
-			self.out("IP Addresses: %s", " ; ".join(apiNIC.ips))
+			self.out("Server ID: %s", nic["serverId"])
+			self.out("Internet access: %s", "yes" if apiNIC["internetAccess"] else "no")
+			self.out("IP Addresses: %s", " ; ".join(apiNIC["ips"]) if "ips" in apiNIC else "(none)")
 			self.out("MAC Address: %s", nic["macAddress"])
 	
 	def printServer(self, server):
-		srv = self.requireArgs(server, ["serverName", "serverId", "creationTime", "lastModificationTime", "provisioningState", "virtualMachineState", "ram", "cores", "internetAccess", "osType"])
+		srv = self.requireArgs(server, ["serverName", "serverId", "creationTime", "lastModificationTime", "provisioningState", "virtualMachineState", "ram", "cores", "osType"])
 		if self.short:
 			self.out("%s => %s is %s and %s", srv["serverName"], srv["serverId"], srv["provisioningState"], srv["virtualMachineState"])
 			self.indent(1)
-			self.out("%s Cores ; %s MiB RAM ; OS: %s ; Internet access [%s]", srv["cores"], srv["ram"], srv["osType"], "yes" if srv["internetAccess"].upper() == "TRUE" else "no")
+			self.out("%s Cores ; %s MiB RAM ; OS: %s ; Internet access [%s]", srv["cores"], srv["ram"], srv["osType"], "yes" if server["internetAccess"] else "no")
 			if "nics" in server:
 				for nic in server.nics:
 					self.printNIC(nic);
@@ -112,9 +118,9 @@ class Formatter:
 			self.out("Virtual machine state: %s", srv["virtualMachineState"])
 			self.out("Cores: %s", srv["cores"])
 			self.out("RAM: %s MiB", srv["ram"])
-			self.out("Internet access: %s", "yes" if srv["internetAccess"].upper() == "TRUE" else "no")
+			self.out("Internet access: %s", "yes" if server["internetAccess"] else "no")
 			self.out("Operating system: %s", srv["osType"])
-			self.out("IP Addresses: %s", (" ; ".join(server.ips)) if "ips" in server else "-")
+			self.out("IP Addresses: %s", (" ; ".join(server.ips)) if "ips" in server else "(none)")
 			if "nics" in server:
 				self.indent(1)
 				for nic in server.nics:
@@ -155,9 +161,11 @@ class Formatter:
 	def printLoadBalancer(self, loadBalancer):
 		self.out("Load balancer ID: %s", loadBalancer["loadBalancerId"])
 		self.out("Name: %s", loadBalancer["loadBalancerName"])
+		self.out("Provisioning state: %s", loadBalancer["provisioningState"])
 		self.out("Algorithm: %s", loadBalancer["loadBalancerAlgorithm"])
 		self.out("IP address: %s", loadBalancer["ip"])
 		self.out("LAN ID: %s", loadBalancer["lanId"])
+		self.out("Creation time [%s] modification time [%s]", loadBalancer["creationTime"], loadBalancer["lastModificationTime"])
 		self.out("Balanced servers:")
 		self.indent(1)
 		if "balancedServers" in loadBalancer:
@@ -166,6 +174,7 @@ class Formatter:
 		else:
 			self.out("(none)")
 		self.indent(-1)
+		self.out()
 		self.out("Firewall:")
 		self.indent(1)
 		if "firewall" in loadBalancer:
@@ -173,8 +182,6 @@ class Formatter:
 		else:
 			self.out("(none)")
 		self.indent(-1)
-		self.out("Creation time [%s] modification time [%s]", loadBalancer["creationTime"], loadBalancer["lastModificationTime"])
-		self.out("Provisioning state: %s", loadBalancer["provisioningState"])
 	
 	def printBalancedServer(self, srv):
 		# it may be "active" instead of "activate", but the documentation specifies it is "activate"
@@ -225,7 +232,7 @@ class Formatter:
 	def printDataCenter(self, dataCenter):
 		dc = self.requireArgs(dataCenter, ["dataCenterName", "provisioningState", "dataCenterVersion"])
 		if self.short:
-			self.out("%s is %s", dc["dataCenterName"], dc["provisioningState"])
+			self.out("Data center %s is %s", dc["dataCenterName"], dc["provisioningState"])
 			self.out("Servers (%d):", len(dataCenter.servers) if "servers" in dataCenter else 0)
 			self.indent(1);
 			if "servers" in dataCenter:
@@ -268,9 +275,11 @@ class Formatter:
 	
 	def printPublicIPBlock(self, ipBlock):
 		if not self.short:
+			self.out("IP Block %s: %s", ipBlock["blockId"], " ; ".join(ipBlock["ips"]))
+		else:
 			self.out()
-		self.out("Block ID: %s", ipBlock["blockId"])
-		self.out("IP addresses: %s", " ; ".join(ipBlock["ips"]))
+			self.out("Block ID: %s", ipBlock["blockId"])
+			self.out("IP addresses: %s", " ; ".join(ipBlock["ips"]))
 	
 	def printGetAllPublicIPBlocks(self, blockList):
 		for ipBlock in blockList:
@@ -278,5 +287,15 @@ class Formatter:
 			for ipObj in ipBlock.publicIps:
 				ips.append(ipObj.ip)
 			self.printPublicIPBlock({"blockId": ipBlock.blockId, "ips": ips})
-
+	
+	def printAddFirewallRule(self, response):
+		self.out("Firewall ID: %s", response.firewallId)
+		self.out("NIC ID: %s", response.nicId)
+		self.out("Provisioning state: %s", response.provisioningState)
+		self.out("The firewall is %s", "enabled" if response.active else "disabled")
+		self.out()
+		print response.firewallRules
+		self.out()
+		print response
+		self.out()
 
