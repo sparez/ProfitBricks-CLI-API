@@ -57,5 +57,7 @@ if argsParser.baseArgs["s"]:
 api = pb.api.API(argsParser.baseArgs["u"], argsParser.baseArgs["p"], debug = argsParser.baseArgs["debug"])
 
 pb.argsparser.ArgsParser.operations[requestedOp]["lambda"](formatter, api, argsParser.opArgs)
-
+if not argsParser.baseArgs["s"]:
+	print ""
+	print "Request ID:", str(api.requestId) if api.requestId is not None else "(none)"
 
