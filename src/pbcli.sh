@@ -18,7 +18,7 @@ echo -e "\n$help"
 
 function parse_internal() {
 	cmd="${command% *}"
-	args="${command#* }"
+	args=`( echo "${command}" | grep ' ' >/dev/null ) && echo "${command#* }"`
 	case "${cmd}" in
 		"use")
 			if [ -n "${args}" ]; then
