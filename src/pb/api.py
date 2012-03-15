@@ -19,6 +19,7 @@ class API:
 	
 	url = "https://api.profitbricks.com/1.1/wsdl"
 	debug = False
+	requestId = None
 	
 	def __init__(self, username, password, debug = False):
 		self.debug = debug
@@ -44,7 +45,13 @@ class API:
 			print "# Calling %s %s" % (func, args)
 		try:
 			method = getattr(self.client.service, func)
-			return method(*args)
+			result = method(*args)
+			if self.requestId is None:
+				if "requestId" in result:
+					self.requestId = result["requestId"]
+				else:
+					self.requestId = "(no info)"
+			return result
 		except suds.WebFault as (err):
 			print "Error: %s" % str(err)
 			sys.exit(2)
@@ -186,7 +193,7 @@ class API:
 		return self.call("setInternetAccess", [dcid, lanid, internetAccess])
 	
 	def updateNIC(self, userArgs):
-		args = self.parseArgs(userArgs, {"nicid": "nicId", "lanid": "lanID", "name": "nicName"})
+		args = self.parseArgs(userArgs, {"nicid": "nicId", "lanid": "lanId", "name": "nicName"})
 		if "ip" in userArgs:
 			args["ip"] = (userArgs["ip"] if userArgs["ip"].lower() != "reset" else "")
 		return self.call("updateNic", [args])
@@ -209,5 +216,23 @@ class API:
 	
 	def releasePublicIPBlock(self, id):
 		return self.call("releasePublicIpBlock", [id])
-
+	
+	def _parseFirewallRule(self, userRule):
+		rule = self.parseArgs(userRule, {"smac": "sourceMac", "sip": "sourceIp", "dip": "targetIp", "icmptype": "icmpType", "icmpcode": "icmpCode"})
+		if "proto" in userRule:
+			rule["protocol"] = userRule["proto"].upper()
+		if "port" in userRule:
+			ports = userRule["port"].split(":")
+			rule["portRangeStart"] = ports[0]
+			rule["portRangeEnd"] = ports[len(ports) - 1]
+		return rule
+	
+	def addFirewallRuleToNic(self, id, userRule):
+		rule = self._parseFirewallRule(userRule)
+		return self.call("addFirewallRuleToNic", [id, [rule]])
+	
+	def addFirewallRuleToLoadBalancer(self, id, userRule):
+		rule = self._parseFirewallRule(userRule)
+		return self.call("addFirewallRuleToLoadBalancer", [id, [rule]])
+	
 
