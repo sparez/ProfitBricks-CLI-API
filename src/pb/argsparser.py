@@ -170,19 +170,19 @@ class ArgsParser:
 			},
 			"registerServersOnLoadBalancer": {
 				"args": ["srvid", "bid"],
-				"lambda": lambda formatter, api, opArgs: formatter.printRegisterServersOnLoadBalancer(api.registerServersOnLoadBalancer(",".split(opArgs["srvid"]), opArgs["bid"]))
+				"lambda": lambda formatter, api, opArgs: formatter.printRegisterServersOnLoadBalancer(api.registerServersOnLoadBalancer(opArgs["srvid"].split(","), opArgs["bid"]))
 			},
 			"deregisterServersOnLoadBalancer": {
 				"args": ["srvid", "bid"],
-				"lambda": lambda formatter, api, opArgs: formatter.printDeregisterServersOnLoadBalancer(api.deregisterServersOnLoadBalancer(",".split(opArgs["srvid"]), opArgs["bid"]))
+				"lambda": lambda formatter, api, opArgs: formatter.printDeregisterServersOnLoadBalancer(api.deregisterServersOnLoadBalancer(opArgs["srvid"].split(","), opArgs["bid"]))
 			},
 			"activateLoadBalancingOnServer": {
 				"args": ["srvid", "bid"],
-				"lambda": lambda formatter, api, opArgs: formatter.printActivateLoadBalancingOnServers(api.activateLoadBalancingOnServer(",".split(opArgs["srvid"]), opArgs["bid"]))
+				"lambda": lambda formatter, api, opArgs: formatter.printActivateLoadBalancingOnServers(api.activateLoadBalancingOnServer(opArgs["srvid"].split(","), opArgs["bid"]))
 			},
 			"deactivateLoadBalancingOnServer": {
 				"args": ["srvid", "bid"],
-				"lambda": lambda formatter, api, opArgs: formatter.printDeactivateLoadBalancingOnServers(api.deactivateLoadBalancingOnServer(",".split(opArgs["srvid"]), opArgs["bid"]))
+				"lambda": lambda formatter, api, opArgs: formatter.printDeactivateLoadBalancingOnServers(api.deactivateLoadBalancingOnServer(opArgs["srvid"].split(","), opArgs["bid"]))
 			},
 			"deleteLoadBalancer": {
 				"args": ["bid"],
@@ -255,6 +255,14 @@ class ArgsParser:
 			"releasePublicIpBlock": {
 				"args": ["blockid"],
 				"lambda": lambda formatter, api, opArgs: formatter.printReleasePublicIPBlock(api.releasePublicIPBlock(opArgs["blockid"]))
+			},
+			"addFirewallRuleToNic": {
+				"args": ["nicId"],
+				"lambda": lambda formatter, api, opArgs: formatter.printAddFirewallRule(api.addFirewallRuleToNic(opArgs["nicid"], opArgs))
+			},
+			"addFirewallRuleToLoadBalancer": {
+				"args": ["bid"],
+				"lambda": lambda formatter, api, opArgs: formatter.printAddFirewallRule(api.addFirewallRuleToLoadBalancer(opArgs["bid"], opArgs))
 			},
 			"@list": {
 				"args": [],
