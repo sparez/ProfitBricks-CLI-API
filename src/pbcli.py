@@ -16,7 +16,7 @@ pb.errorhandler.should_exit_python = False
 
 class Shell:
 
-	version = '1.2'
+	version = '0.1'
 
 	cmds_internal = {}
 	cmds_api = pb.argsparser.ArgsParser().operations

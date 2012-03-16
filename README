@@ -34,11 +34,11 @@ your password.
 4. QUICK INTRO
 ==============
 
-Use the pbcli.sh application for a better interface. Type 'help' to get help (it
+Use the pbcli.py application for a better interface. Type 'help' to get help (it
 will load the pbapi.1 man page) or list to get a list of available commands. The
-pbcli interface supports tab completion, but it currently does not have history.
-Use 'last' to execute your last command. This is useful in case the hardware was
-in provisioning state which failed the command and you want to run it again.
+pbcli interface supports tab completion, has basic history and allows you to set
+a default working datacenter and wait after all provisioning operations until it
+becomes available again.
 
 5. SUPPORT
 ==========
