@@ -1,4 +1,3 @@
-import sys
 import errorhandler
 
 class ArgsParser:
@@ -7,39 +6,40 @@ class ArgsParser:
 		self.baseArgs = {"s": False, "debug": False} # s = short output formatting
 		self.opArgs = {}
 	
-	def readUserArgs(self):
+	def readUserArgs(self, argv):
 		i = 1
 		# -u -p -auth -debug and -s are base arguments, everything else are operation arguments
 		# operation argument names are converted to lower-case and have dashes removed (eg, "create-datacenter -nA-Me hello" => baseArgs["op"]="create-datacenter", opArgs["name"]="hello")
-		while i < len(sys.argv):
-			arg = sys.argv[i]
+		while i < len(argv):
+			arg = argv[i]
 			if arg == "-" or arg == "":
 				i += 1
 				continue
 			# no dash = operation
 			if arg[0] != "-":
-				self.baseArgs["op"] = sys.argv[i]
+				if not "op" in self.baseArgs:
+					self.baseArgs["op"] = argv[i]
 				i += 1
 				continue
 			# base args
 			if arg.lower() == "-u":
-				if i == len(sys.argv) - 1:
+				if i == len(argv) - 1:
 					ProfitBricks.ArgsError("Missing username")
-				self.baseArgs["u"] = sys.argv[i + 1]
+				self.baseArgs["u"] = argv[i + 1]
 				i += 1
 			elif arg.lower() == "-p":
-				if (i == len(sys.argv) - 1) or (sys.argv[i + 1][0] == "-"):
+				if (i == len(argv) - 1) or (argv[i + 1][0] == "-"):
 					import getpass
 					self.baseArgs["p"] = getpass.getpass()
 				else:
-					self.baseArgs["p"] = sys.argv[i + 1]
+					self.baseArgs["p"] = argv[i + 1]
 				i += 1
 			elif arg.lower() == "-auth":
-				if i == len(sys.argv) - 1:
+				if i == len(argv) - 1:
 					ProfitBricks.ArgsError("Missing authfile")
-				self.baseArgs["auth"] = sys.argv[i + 1]
+				self.baseArgs["auth"] = argv[i + 1]
 				try:
-					authFile = open(sys.argv[i + 1], "r")
+					authFile = open(argv[i + 1], "r")
 					self.baseArgs["u"] = authFile.readline().strip("\n")
 					self.baseArgs["p"] = authFile.readline().strip("\n")
 					authFile.close()
@@ -52,7 +52,7 @@ class ArgsParser:
 				self.baseArgs["s"] = True
 			# if not base arg, then it is operation arg
 			else:
-				self.opArgs[arg[1:].lower().replace("-", "")] = (sys.argv[i + 1] if i < len(sys.argv) - 1 else "")
+				self.opArgs[arg[1:].lower().replace("-", "")] = (argv[i + 1] if i < len(argv) - 1 else "")
 				i += 1
 			i += 1
 		
@@ -176,13 +176,13 @@ class ArgsParser:
 				"args": ["srvid", "bid"],
 				"lambda": lambda formatter, api, opArgs: formatter.printDeregisterServersOnLoadBalancer(api.deregisterServersOnLoadBalancer(opArgs["srvid"].split(","), opArgs["bid"]))
 			},
-			"activateLoadBalancingOnServer": {
+			"activateLoadBalancingOnServers": {
 				"args": ["srvid", "bid"],
-				"lambda": lambda formatter, api, opArgs: formatter.printActivateLoadBalancingOnServers(api.activateLoadBalancingOnServer(opArgs["srvid"].split(","), opArgs["bid"]))
+				"lambda": lambda formatter, api, opArgs: formatter.printActivateLoadBalancingOnServers(api.activateLoadBalancingOnServers(opArgs["srvid"].split(","), opArgs["bid"]))
 			},
-			"deactivateLoadBalancingOnServer": {
+			"deactivateLoadBalancingOnServers": {
 				"args": ["srvid", "bid"],
-				"lambda": lambda formatter, api, opArgs: formatter.printDeactivateLoadBalancingOnServers(api.deactivateLoadBalancingOnServer(opArgs["srvid"].split(","), opArgs["bid"]))
+				"lambda": lambda formatter, api, opArgs: formatter.printDeactivateLoadBalancingOnServers(api.deactivateLoadBalancingOnServers(opArgs["srvid"].split(","), opArgs["bid"]))
 			},
 			"deleteLoadBalancer": {
 				"args": ["bid"],

@@ -1,6 +1,7 @@
 import sys
 import suds
 import logging
+import errorhandler
 from suds.transport.http import HttpAuthenticated
 from suds.transport import Request
 
@@ -37,7 +38,7 @@ class API:
 				print "Error: Invalid username or password"
 			else:
 				print "Error: Unknown error: %s" % str(err)
-			sys.exit(3)
+			errorhandler.exit(3)
 	
 	# Calls the func() function using SOAP and the given arguments list (must always be an array)
 	def call(self, func, args):
@@ -54,13 +55,13 @@ class API:
 			return result
 		except suds.WebFault as (err):
 			print "Error: %s" % str(err)
-			sys.exit(2)
+			errorhandler.exit(2)
 		except suds.transport.TransportError as (err):
 			if err.httpcode == 401:
 				print "Error: Invalid username or password"
 			else:
 				print "Error: Unknown error: %s" % str(err)
-			sys.exit(3)
+			errorhandler.exit(3)
 	
 	# Returns the userArgs hash, but replaces the keys with the values found in translation and only the ones found in translation
 	# eg, parseArgs({"a": 10, "b": 20, "c": 30}, {"a": "a", "b": "B"}) => {"a": 10, "B": 20}
@@ -141,7 +142,7 @@ class API:
 		if "algo" in userArgs:
 			args["loadBalancerAlgorithm"] = userArgs["algo"].upper()
 		if "srvid" in userArgs:
-			args["serverIds"] = ",".split(userArgs["srvid"])
+			args["serverIds"] = userArgs["srvid"].split(",")
 		result = self.call("createLoadBalancer", [args])
 		return result.loadBalancerId
 	
@@ -154,11 +155,11 @@ class API:
 	def deregisterServersOnLoadBalancer(self, srvids, bid):
 		return self.call("deregisterServersOnLoadBalancer", [srvids, bid])
 	
-	def activateServersOnLoadBalancer(self, srvids, bid):
-		return self.call("activateServersOnLoadBalancer", [srvids, bid])
+	def activateLoadBalancingOnServers(self, srvids, bid):
+		return self.call("activateLoadBalancingOnServers", [srvids, bid])
 	
-	def deactivateServersOnLoadBalancer(self, srvids, bid):
-		return self.call("deactivateServersOnLoadBalancer", [srvids, bid])
+	def deactivateLoadBalancingOnServers(self, srvids, bid):
+		return self.call("deactivateLoadBalancingOnServers", [srvids, bid])
 	
 	def deleteLoadBalancer(self, id):
 		return self.call("deleteLoadBalancer", [id])
