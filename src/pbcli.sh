@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Helpers
-version="1.2" # pb api/cli version
+version="0.1" # pb api/cli version
 tbold=`tput bold` # begin writing bold to stdout
 tnormal=`tput sgr0` # end writing bold to stdout
 help=""\

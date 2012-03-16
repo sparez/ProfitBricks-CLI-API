@@ -1,14 +1,14 @@
 Copyright 2012 ProfitBricks GmbH
+Version 0.1 released March 16th 2012
 
-= ProfitBricks API Command-Line Interface =
-===========================================
-
-If you already installed a previous version, you don't need to do any of this
-
-Installation instructions for Debian; replace apt-get with yum where appropriate
+=============================================
+== ProfitBricks API Command-Line Interface ==
+=============================================
 
 1. PREREQUISITES FOR LINUX
 ==========================
+
+Installation instructions for Debian; replace apt-get with yum where appropriate
 
 sudo apt-get install python python-setuptools
 sudo easy_install suds
