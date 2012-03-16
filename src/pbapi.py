@@ -28,7 +28,7 @@ import pb.helper
 ## Parse arguments
 
 argsParser = pb.argsparser.ArgsParser()
-argsParser.readUserArgs()
+argsParser.readUserArgs(sys.argv)
 
 # Make sure we have an operation
 
