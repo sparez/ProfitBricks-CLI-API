@@ -6,6 +6,7 @@ import re
 import time
 import platform
 import os
+import shlex
 import pb.api
 import pb.argsparser
 import pb.helper
@@ -60,7 +61,7 @@ class Shell:
 		return inner_completer
 
 	def parse(self, text):
-		args = re.split('\s+', text.strip())
+		args = shlex.split(text)
 		if len(args) == 0:
 			return
 		cmd = args[0]
@@ -72,7 +73,7 @@ class Shell:
 		
 		if self.default_dc is not None:
 			text = '-dcid ' + self.default_dc + ' ' + text
-			args = re.split('\s+', text.strip())
+			args = shlex.split(text)
 		
 		for c in self.cmds_api:
 			if c.replace('-', '').replace('@', '').lower() == cmd.replace('-', '').replace('@', '').lower():
