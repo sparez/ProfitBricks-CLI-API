@@ -168,6 +168,10 @@ class ArgsParser:
 				"args": ["bid"],
 				"lambda": lambda formatter, api, opArgs: formatter.printLoadBalancer(api.getLoadBalancer(opArgs["bid"]))
 			},
+			"updateLoadBalancer": {
+				"args": ["bid"],
+				"lambda": lambda formatter, api, opArgs: formatter.printUpdateLoadBalancer(api.updateLoadBalancer(opArgs))
+			},
 			"registerServersOnLoadBalancer": {
 				"args": ["srvid", "bid"],
 				"lambda": lambda formatter, api, opArgs: formatter.printRegisterServersOnLoadBalancer(api.registerServersOnLoadBalancer(opArgs["srvid"].split(","), opArgs["bid"]))

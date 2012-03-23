@@ -58,6 +58,7 @@ class Formatter:
 	printDeregisterServersOnLoadBalancer = operationCompleted
 	printActivateLoadBalancingOnServers = operationCompleted
 	printDeactivateLoadBalancingOnServers = operationCompleted
+	printUpdateLoadBalancer = operationCompleted
 	
 	def printCreateDataCenter(self, response):
 		self.out("Data center ID: %s", response["dataCenterId"])

@@ -149,6 +149,12 @@ class API:
 	def getLoadBalancer(self, id):
 		return self.call("getLoadBalancer", [id])
 	
+	def updateLoadBalancer(self, userArgs):
+		args = self.parseArgs(userArgs, {"bid": "loadBalancerId", "name": "loadBalancerName", "ip": "ip"})
+		if "algo" in userArgs:
+			args["loadBalancerAlgorithm"] = userArgs["algo"].upper()
+		return self.call("updateLoadBalancer", [args])
+	
 	def registerServersOnLoadBalancer(self, srvids, bid):
 		return self.call("registerServersOnLoadBalancer", [srvids, bid])
 	
